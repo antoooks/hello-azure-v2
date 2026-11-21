@@ -1,5 +1,8 @@
 # Application Registration for GitOps
 # This creates an Azure AD application registration for GitOps authentication
+#
+# [ARGOCD-OIDC] Switched off by gitops_app_registration_enabled = false (count on the module below). Without it
+# Argo CD cannot use Entra ID login; see the [ARGOCD-OIDC] places in 03_applications (index in 01-variables.tf).
 
 locals {
   maintainers_principal_object_ids = [for user in values(data.azuread_user.gitops_maintainer) : user.object_id]
@@ -12,6 +15,9 @@ data "azuread_service_principal" "msgraph" {
 }
 
 module "application_registration" {
+  # Set gitops_app_registration_enabled = false where Argo CD does not use Entra ID (OIDC) login, or where
+  # you cannot create app registrations. Argo CD then needs its built-in admin login instead.
+  count  = var.gitops_app_registration_enabled ? 1 : 0
   source = "github.com/Unique-AG/terraform-modules.git//modules/azure-entra-app-registration-argocd?ref=19ba05c685ebfbb97ace553affe9991aea7c1531" # azure-entra-app-registration-argocd-2.2.0
   # The old generic module (azure-entra-app-registration 4.0.0) granted no consent, and the Terraform
   # identity lacks DelegatedPermissionGrant.ReadWrite.All.

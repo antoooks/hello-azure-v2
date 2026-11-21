@@ -8,4 +8,4 @@ images:
   - name: kong/kubernetes-ingress-controller:3.4.4
   - name: qdrant/qdrant:v1.15.1-unprivileged
 sourceRegistry: docker.io
-targetRegistry: uqhacrtest.azurecr.io
+targetRegistry: uqhacranto.azurecr.io

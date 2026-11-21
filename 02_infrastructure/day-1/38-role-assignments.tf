@@ -56,38 +56,38 @@ resource "azurerm_role_assignment" "audit_storage_kv_secrets_reader" {
 
 # Core Key Vault - Terraform Service Principal
 resource "azurerm_role_assignment" "kv_main_crypto_officer_terraform_assign" {
-  principal_id         = data.azuread_service_principal.terraform.object_id
+  principal_id         = data.azuread_client_config.current.object_id
   role_definition_name = var.key_manager_key_vault_role_name
   scope                = azurerm_key_vault.main_kv.id
 }
 
 resource "azurerm_role_assignment" "kv_main_secrets_officer_terraform_assign" {
-  principal_id         = data.azuread_service_principal.terraform.object_id
+  principal_id         = data.azuread_client_config.current.object_id
   role_definition_name = var.secret_manager_key_vault_role_name
   scope                = azurerm_key_vault.main_kv.id
 }
 
 resource "azurerm_role_assignment" "kv_main_access_administrator_terraform_assign" {
-  principal_id         = data.azuread_service_principal.terraform.object_id
+  principal_id         = data.azuread_client_config.current.object_id
   role_definition_name = var.access_manager_key_vault_role_name
   scope                = azurerm_key_vault.main_kv.id
 }
 
 # Sensitive Key Vault - Terraform Service Principal
 resource "azurerm_role_assignment" "kv_crypto_officer_terraform_assign" {
-  principal_id         = data.azuread_service_principal.terraform.object_id
+  principal_id         = data.azuread_client_config.current.object_id
   role_definition_name = var.key_manager_key_vault_role_name
   scope                = azurerm_key_vault.sensitive_kv.id
 }
 
 resource "azurerm_role_assignment" "kv_secrets_officer_terraform_assign" {
-  principal_id         = data.azuread_service_principal.terraform.object_id
+  principal_id         = data.azuread_client_config.current.object_id
   role_definition_name = var.secret_manager_key_vault_role_name
   scope                = azurerm_key_vault.sensitive_kv.id
 }
 
 resource "azurerm_role_assignment" "kv_access_administrator_terraform_assign" {
-  principal_id         = data.azuread_service_principal.terraform.object_id
+  principal_id         = data.azuread_client_config.current.object_id
   role_definition_name = var.access_manager_key_vault_role_name
   scope                = azurerm_key_vault.sensitive_kv.id
 }

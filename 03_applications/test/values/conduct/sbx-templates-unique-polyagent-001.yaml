@@ -1,7 +1,7 @@
 # SandboxTemplate + SandboxWarmPool for the Unique polyagent runtime. Every sandbox is one Kata pod from
 # this template; assistants-core claims them by template name (sandboxConfig.template).
 image:
-  registry: uqhacrtest.azurecr.io
+  registry: uqhacranto.azurecr.io
   repository: unique/unique-polyagent-001
   tag: "2026.44.3"
   useDigest: false

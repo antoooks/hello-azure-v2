@@ -418,6 +418,7 @@ variable "keyvault_secret_writer_user_ids" {
 variable "terraform_service_principal_object_id" {
   description = "Object ID of the Terraform service principal (created in day-0/bootstrap). Required for Key Vault role assignments."
   type        = string
+  default     = null # unused: Option A runs Terraform as the logged-in user (data.azuread_client_config.current)
 }
 
 # Key Vault Role Names
@@ -651,7 +652,7 @@ variable "cluster_workload_identities" {
 variable "defender_security_contact_email" {
   description = "Email address for the Defender security contact"
   type        = string
-  default     = "security-events@unique.ch"
+  default     = "kurnianto.trilaksono@unique.ai"
 }
 
 variable "defender_storage_accounts_extensions" {

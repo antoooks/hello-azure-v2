@@ -1,0 +1,6 @@
+# [ARGOCD-OIDC] Argo CD login overlay for argoAuth: admin (see argo-bootstrap.yaml.gotmpl).
+# Built-in admin account with username/password login; no Entra ID (OIDC). Username: admin. Initial password:
+#   kubectl -n unique get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d
+configs:
+  cm:
+    admin.enabled: true

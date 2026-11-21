@@ -1,5 +1,5 @@
 image:
-  repository: uqhacrtest.azurecr.io/backend-service-speech
+  repository: uqhacranto.azurecr.io/backend-service-speech
   tag: "2026.44.3"
 replicaCount: 2
 resources:
@@ -14,5 +14,5 @@ serviceAccount:
     clientId: 1dc12421-3b16-48cd-8b25-497234379625 # aks-id-test
 secretProvider:
   vaults:
-    hakv2test:
+    hakv2anto:
       SPEECH_PRIVATE_ENDPOINT_HOST: swedencentral-speech-fqdn

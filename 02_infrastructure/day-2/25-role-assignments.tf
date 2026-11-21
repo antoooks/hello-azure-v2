@@ -20,7 +20,7 @@ resource "azurerm_role_assignment" "psql_identity_role_assignment" {
 
 # Terraform Service Principal ACR Push assignment
 resource "azurerm_role_assignment" "acrpush_terraform" {
-  principal_id         = data.azuread_service_principal.terraform.object_id
+  principal_id         = data.azuread_client_config.current.object_id
   role_definition_name = var.acr_push_role_name
   scope                = data.azurerm_resource_group.core.id
 }
@@ -74,13 +74,15 @@ resource "azurerm_role_assignment" "acrpull_kubelet" {
 }
 
 resource "azurerm_role_assignment" "main_keyvault_secret_manager_group" {
-  principal_id         = azuread_group.main_keyvault_secret_writer.object_id
+  count                = var.entra_groups_enabled ? 1 : 0
+  principal_id         = azuread_group.main_keyvault_secret_writer[0].object_id
   role_definition_name = local.secret_manager_key_vault_role_name
   scope                = data.azurerm_key_vault.key_vault_core.id
 }
 
 resource "azurerm_role_assignment" "telemetry_observer_group" {
-  principal_id         = azuread_group.telemetry_observer.object_id
+  count                = var.entra_groups_enabled ? 1 : 0
+  principal_id         = azuread_group.telemetry_observer[0].object_id
   scope                = data.azurerm_resource_group.core.id
   role_definition_name = data.azurerm_role_definition.telemetry_observer.name
 }
@@ -106,7 +108,7 @@ resource "azurerm_role_assignment" "monitor_metrics_reader" {
 # Terraform Service Principal Kubernetes assignments
 # Tries to use explicit scope from variable first, then falls back to the module.kubernetes_cluster module output
 resource "azurerm_role_assignment" "cluster_user_terraform" {
-  principal_id         = data.azuread_service_principal.terraform.object_id
+  principal_id         = data.azuread_client_config.current.object_id
   role_definition_name = local.cluster_user_role_name
   scope                = coalesce(var.aks_cluster_id, module.kubernetes_cluster.kubernetes_cluster_id)
 }
@@ -114,7 +116,7 @@ resource "azurerm_role_assignment" "cluster_user_terraform" {
 # Terraform Service Principal Kubernetes RBAC assignments
 # Tries to use explicit scope from variable first, then falls back to the module.kubernetes_cluster module output
 resource "azurerm_role_assignment" "cluster_rbac_admin_terraform" {
-  principal_id         = data.azuread_service_principal.terraform.object_id
+  principal_id         = data.azuread_client_config.current.object_id
   role_definition_name = local.cluster_rbac_admin_role_name
   scope                = coalesce(var.aks_cluster_id, module.kubernetes_cluster.kubernetes_cluster_id)
 }
@@ -123,13 +125,39 @@ resource "azurerm_role_assignment" "cluster_rbac_admin_terraform" {
 # Azure RBAC for Kubernetes. Membership is managed outside Terraform. Deliberately not the Contributor
 # role the Terraform service principal holds: the group needs kubectl rights, not ARM management.
 resource "azurerm_role_assignment" "cluster_user_admin_group" {
-  principal_id         = azuread_group.admin_kubernetes_cluster.object_id
+  count                = var.entra_groups_enabled ? 1 : 0
+  principal_id         = azuread_group.admin_kubernetes_cluster[0].object_id
   role_definition_name = "Azure Kubernetes Service Cluster User Role"
   scope                = coalesce(var.aks_cluster_id, module.kubernetes_cluster.kubernetes_cluster_id)
 }
 
 resource "azurerm_role_assignment" "cluster_rbac_admin_admin_group" {
-  principal_id         = azuread_group.admin_kubernetes_cluster.object_id
+  count                = var.entra_groups_enabled ? 1 : 0
+  principal_id         = azuread_group.admin_kubernetes_cluster[0].object_id
+  role_definition_name = local.cluster_rbac_admin_role_name
+  scope                = coalesce(var.aks_cluster_id, module.kubernetes_cluster.kubernetes_cluster_id)
+}
+
+# Individual cluster admins (var.cluster_admin_user_ids): the same two roles as the admin group above, assigned
+# per user so a first-time setup works without Entra groups (entra_groups_enabled = false). Because the
+# assignments are scoped to the cluster, they are recreated whenever the cluster is replaced.
+resource "azurerm_role_assignment" "cluster_user_admin_users" {
+  for_each             = data.azuread_user.cluster_admin
+  principal_id         = each.value.object_id
+  principal_type       = "User"
+  role_definition_name = "Azure Kubernetes Service Cluster User Role"
+  scope                = coalesce(var.aks_cluster_id, module.kubernetes_cluster.kubernetes_cluster_id)
+}
+
+# Skips the identity running Terraform: cluster_rbac_admin_terraform already gives it this role, and a second
+# assignment of the same role/scope/principal fails with 409 RoleAssignmentExists.
+resource "azurerm_role_assignment" "cluster_rbac_admin_users" {
+  for_each = {
+    for id, user in data.azuread_user.cluster_admin : id => user
+    if user.object_id != data.azuread_client_config.current.object_id
+  }
+  principal_id         = each.value.object_id
+  principal_type       = "User"
   role_definition_name = local.cluster_rbac_admin_role_name
   scope                = coalesce(var.aks_cluster_id, module.kubernetes_cluster.kubernetes_cluster_id)
 }

@@ -3,4 +3,4 @@ images:
   - name: agent-sandbox/agent-sandbox-controller:v1.0.1
   - name: agent-sandbox/sandbox-router-go:v1.0.1
 sourceRegistry: registry.k8s.io
-targetRegistry: uqhacrtest.azurecr.io
+targetRegistry: uqhacranto.azurecr.io

@@ -1,8 +1,17 @@
 # Day-2 specific parameters
-env = "test"
+env = "anto"
 
 # Network configuration
 subnet_agw_cidr = "10.202.3.0/28"
+
+# AKS API server access
+#   aks_private_cluster_enabled = true  -> private: reachable only from inside the VNet; the IP list below is ignored
+#   aks_private_cluster_enabled = false -> public: reachable only from the IPs below (at least one is required)
+# Get your IP with: curl -s -4 ifconfig.me
+# WARNING: switching aks_private_cluster_enabled replaces (destroys and recreates) the cluster.
+# Changing only the IP list updates the cluster in place.
+aks_private_cluster_enabled         = false
+aks_api_server_authorized_ip_ranges = ["116.86.198.35/32"]
 
 # Application Gateway configuration
 # Use explicit name to preserve existing gateway IP configuration name and avoid replacement
@@ -10,27 +19,27 @@ subnet_agw_cidr = "10.202.3.0/28"
 application_gateway_gateway_ip_configuration_name = "ha-test-gwip"
 
 # Budget configuration
-budget_contact_emails = ["support@unique.ch"]
+budget_contact_emails = ["kurnianto.trilaksono@unique.ai"]
 
 # Key Vault configuration
 kv_sku = "premium"
 
 # Terraform Service Principal (created in day-0/bootstrap)
 # To get the object_id, run: az ad sp list --display-name "terraform" --query "[].{objectId:id,displayName:displayName}" -o table, or go to Azure Portal -> Enterprise Applications -> Terraform -> Object ID
-terraform_service_principal_object_id = "b5016fe4-421b-4dd3-bc65-c9abf3dfad8b"
+# terraform_service_principal_object_id = "b5016fe4-421b-4dd3-bc65-c9abf3dfad8b"  # unused: Option A runs Terraform as the logged-in user
 
 # Kubelet Identity Object ID (from AKS cluster)
 # To get the object_id, run: az aks show -n aks-test -g resource-group-core --query 'identityProfile.kubeletidentity.objectId' -o tsv
 # This is set explicitly to avoid drift when the AKS cluster data source returns a different value
-kubelet_identity_object_id = "776cc853-f337-48a2-a934-42fe4f342f7b"
+# kubelet_identity_object_id = "776cc853-f337-48a2-a934-42fe4f342f7b"  # upstream value; null = use the cluster day-2 creates
 
 # AKS Cluster ID (for role assignment scopes)
 # To get the ID, run: az aks show -n aks-test -g resource-group-core --query 'id' -o tsv
-aks_cluster_id = "/subscriptions/782871a0-bcee-44fb-851f-ccd3e69ada2a/resourceGroups/resource-group-core/providers/Microsoft.ContainerService/managedClusters/aks-test"
+# aks_cluster_id = "/subscriptions/782871a0-bcee-44fb-851f-ccd3e69ada2a/resourceGroups/resource-group-core/providers/Microsoft.ContainerService/managedClusters/aks-test"  # upstream value; null = use the cluster day-2 creates
 
 # CSI Identity Object ID (Key Vault Secrets Provider identity from AKS cluster)
 # To get the object_id, run: az aks show -n aks-test -g resource-group-core --query 'addonProfiles.azureKeyvaultSecretsProvider.identity.objectId' -o tsv
-csi_identity_object_id = "8f6d5aff-a056-4073-8b99-0dfdbe5e25dd"
+# csi_identity_object_id = "8f6d5aff-a056-4073-8b99-0dfdbe5e25dd"  # upstream value; null = use the cluster day-2 creates
 
 # GitOps configuration
 gitops_display_name = "GitOps"
@@ -68,25 +77,15 @@ resource_vnet_location            = "swedencentral"
 
 # User permissions
 cluster_admin_user_ids = [
-  "4ee4611f-b24c-444b-8d34-edab333bf868",
-  "4b89a1f0-8038-4929-81e6-6d128dac7aa0",
-  "084a1c45-5010-4aab-bab6-7b86a9d10e5c",
-  "3b48f167-cb68-4655-b45b-878e170af84d",
-  "0a28a069-6af6-43a3-9ef4-4b2a9c6d1b86"
+  "8182113a-0dda-426d-9402-c317c71ae1c8",
 ]
 
 keyvault_secret_writer_user_ids = [
-  "4ee4611f-b24c-444b-8d34-edab333bf868",
-  "4b89a1f0-8038-4929-81e6-6d128dac7aa0",
-  "084a1c45-5010-4aab-bab6-7b86a9d10e5c",
-  "3b48f167-cb68-4655-b45b-878e170af84d",
+  "8182113a-0dda-426d-9402-c317c71ae1c8",
 ]
 
 telemetry_observer_user_ids = [
-  "4ee4611f-b24c-444b-8d34-edab333bf868",
-  "4b89a1f0-8038-4929-81e6-6d128dac7aa0",
-  "084a1c45-5010-4aab-bab6-7b86a9d10e5c",
-  "3b48f167-cb68-4655-b45b-878e170af84d",
+  "8182113a-0dda-426d-9402-c317c71ae1c8",
 ]
 
 # Resource Group Names (created in day-0)
@@ -99,26 +98,34 @@ main_kv_name      = "hakv1"
 sensitive_kv_name = "hakv2"
 
 # DNS Zone
-dns_zone_name = "test-hello.azure.unique.dev"
+dns_zone_name = "sb-trilaksono-001.unique.dev"
 
-# Application Registration
-application_registration_gitops_display_name = "GitOps"
+# Entra ID objects: off in this sandbox. The deploying user cannot create groups or app registrations
+# (403 Authorization_RequestDenied), and Argo CD does not use Entra ID (OIDC) login here.
+# [ARGOCD-OIDC] gitops_app_registration_enabled is the OIDC switch. Keep it in line with argoAuth in
+# 03_applications/argo-bootstrap.yaml.gotmpl (admin = false is fine, oidc needs true).
+entra_groups_enabled            = false
+gitops_app_registration_enabled = false
+
+# [ARGOCD-OIDC] Application Registration (only used when gitops_app_registration_enabled = true)
+application_registration_gitops_display_name = "GitOps-anto"
 
 # User permissions
+# [ARGOCD-OIDC] Only used by the OIDC app registration; no effect while gitops_app_registration_enabled = false.
 gitops_maintainer_user_ids = [
-  "4ee4611f-b24c-444b-8d34-edab333bf868",
-  "4b89a1f0-8038-4929-81e6-6d128dac7aa0",
-  "084a1c45-5010-4aab-bab6-7b86a9d10e5c",
-  "3b48f167-cb68-4655-b45b-878e170af84d",
+  "8182113a-0dda-426d-9402-c317c71ae1c8",
 ]
 
-# Azure AD Groups
-telemetry_observer_group_display_name          = "Telemetry Observer"
-sensitive_data_observer_group_display_name     = "Sensitive Data Observer"
-devops_group_display_name                      = "DevOps"
-emergency_admin_group_display_name             = "Emergency Admin"
-admin_kubernetes_cluster_group_display_name    = "Admin Kubernetes Cluster"
-main_keyvault_secret_writer_group_display_name = "Main KeyVault writer"
+# Azure AD Groups (tenant-wide: suffixed with env so sandboxes in the same tenant don't create same-named groups)
+telemetry_observer_group_display_name          = "Telemetry Observer-anto"
+sensitive_data_observer_group_display_name     = "Sensitive Data Observer-anto"
+devops_group_display_name                      = "DevOps-anto"
+emergency_admin_group_display_name             = "Emergency Admin-anto"
+admin_kubernetes_cluster_group_display_name    = "Admin Kubernetes Cluster-anto"
+main_keyvault_secret_writer_group_display_name = "Main KeyVault writer-anto"
+
+# Audit storage account (globally unique; default "helloazureaudit" is taken and not derived from env)
+audit_storage_sa_name = "helloazureauditanto"
 
 # Federated Identity Credentials
 cluster_workload_identities = {
@@ -170,13 +177,6 @@ openai_cognitive_accounts = {
         model_name    = "gpt-4o"
         model_version = "2024-11-20"
         sku_name      = "Standard"
-        sku_capacity  = 50
-      },
-      {
-        name          = "gpt-4o-2024-05-13"
-        model_name    = "gpt-4o"
-        model_version = "2024-05-13"
-        sku_name      = "GlobalStandard"
         sku_capacity  = 50
       },
       {
@@ -256,14 +256,14 @@ speech_service_accounts = {
     location              = "swedencentral"
     account_kind          = "SpeechServices"
     account_sku_name      = "S0"
-    custom_subdomain_name = "ss-hello-azure-test"
+    custom_subdomain_name = "ss-hello-azure-anto" # globally unique; not derived from env
     private_endpoint      = true
   }
 }
 
 # DNS Zones 
 dns_zones = {
-  name_client_consented = "client-consented.unique.dev"
+  name_client_consented = "client-consented.sb-trilaksono-001.unique.dev"
   resource_group_name   = "rg-vnet-002"
   private_zones = {
     cognitive_services = {
@@ -310,7 +310,7 @@ kubernetes_node_pool_settings = {
       lifecycle   = "ephemeral"
       scalability = "rapid"
     }
-    vm_size = "Standard_D8s_v4"
+    vm_size = "Standard_D8s_v5" # Dsv4 is not offered in swedencentral (AvailabilityZoneNotSupported); same 8 vCPU / 32 GiB
   },
   steady = {
     max_count   = 4

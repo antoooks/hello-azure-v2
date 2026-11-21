@@ -4,4 +4,4 @@ images:
   - name: jetstack/cert-manager-controller:v1.12.2
   - name: prometheus/blackbox-exporter:v0.28.0
 sourceRegistry: quay.io
-targetRegistry: uqhacrtest.azurecr.io
+targetRegistry: uqhacranto.azurecr.io

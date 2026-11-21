@@ -1,13 +1,13 @@
 image:
   tag: "2026.44.3"
-  repository: uqhacrtest.azurecr.io/backend-service-scope-management
+  repository: uqhacranto.azurecr.io/backend-service-scope-management
 env:
-  ZITADEL_HOST: https://id.test-hello.azure.unique.dev
+  ZITADEL_HOST: https://id.sb-trilaksono-001.unique.dev
   ZITADEL_ROOT_ORG_ID: "361772156100608158"
   # This can be uncommented if you want to avoid hairpinning (going outisde of the cluster to reach Zitadel which is deployed in the same cluster)
-  # ZITADEL_GRPC_DEFAULT_AUTHORITY: id.test-hello.azure.unique.dev
-  # ZITADEL_GRPC_SSL_TARGET_NAME_OVERRIDE: id.test-hello.azure.unique.dev
-  # ZITADEL_HTTP_EXTRA_HEADERS: '{"x-zitadel-instance-host": "id.test-hello.azure.unique.dev"}'
+  # ZITADEL_GRPC_DEFAULT_AUTHORITY: id.sb-trilaksono-001.unique.dev
+  # ZITADEL_GRPC_SSL_TARGET_NAME_OVERRIDE: id.sb-trilaksono-001.unique.dev
+  # ZITADEL_HTTP_EXTRA_HEADERS: '{"x-zitadel-instance-host": "id.sb-trilaksono-001.unique.dev"}'
   # ZITADEL_HOST: http://zitadel.unique.svc.cluster.local:8080
 extraRoutes:
   scim:
@@ -20,14 +20,14 @@ extraRoutes:
         group: gateway.networking.k8s.io
         kind: Gateway
     hostnames:
-      - api.test-hello.azure.unique.dev
+      - api.sb-trilaksono-001.unique.dev
     matches:
       - path:
           type: PathPrefix
           value: /scim
 secretProvider:
   vaults:
-    hakv2test:
+    hakv2anto:
       DATABASE_URL: database-url-scope-management
-    hakv1test:
+    hakv1anto:
       ZITADEL_PAT: manual-zitadel-scope-mgmt-pat

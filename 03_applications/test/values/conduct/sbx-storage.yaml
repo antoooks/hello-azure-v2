@@ -1,6 +1,6 @@
 # sbx-storage: checkpoint and skill-cache store for sandboxes, behind sbx-gateway.
 image:
-  registry: uqhacrtest.azurecr.io
+  registry: uqhacranto.azurecr.io
   repository: unique/sbx-storage
   tag: "2026.44.3"
   useDigest: false

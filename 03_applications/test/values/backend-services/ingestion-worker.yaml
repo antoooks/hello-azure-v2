@@ -1,10 +1,10 @@
 image:
   tag: "2026.44.3"
-  repository: uqhacrtest.azurecr.io/backend-service-ingestion-worker
+  repository: uqhacranto.azurecr.io/backend-service-ingestion-worker
 secretProvider:
   vaults:
-    # Must match actual Key Vault name (main KV for test = hakv1 + env = hakv1test)
-    hakv1test:
+    # Must match actual Key Vault name (main KV for test = hakv1 + env = hakv1anto)
+    hakv1anto:
       AZURE_OPENAI_API_ENDPOINT: cognitive-account-swedencentral-ep
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: azure-document-intelligence-endpoints
 serviceAccount:

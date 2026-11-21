@@ -1,11 +1,11 @@
 image:
   tag: "2026.44.3"
-  repository: uqhacrtest.azurecr.io/backend-service-ingestion
+  repository: uqhacranto.azurecr.io/backend-service-ingestion
 env:
   ELASTICSEARCH_CA_BUNDLE: /etc/ssl/elastic/ca.crt
   ELASTICSEARCH_URL: https://elasticsearch-ingestion-es-http.unique.svc:9200
   ELASTICSEARCH_USERNAME: elastic
-  INGESTION_UPLOAD_API_URL: https://api.test-hello.azure.unique.dev/scoped/ingestion/upload
+  INGESTION_UPLOAD_API_URL: https://api.sb-trilaksono-001.unique.dev/scoped/ingestion/upload
   ZITADEL_ROOT_ORG_ID: "361772156100608158"
 envVars:
   - name: RABBITMQ_USERNAME
@@ -58,12 +58,12 @@ serviceAccount:
     enabled: true
 secretProvider:
   vaults:
-    hakv2test:
+    hakv2anto:
       DATABASE_URL: database-url-ingestion
       AZURE_FGPT_STORAGE_CONNECTION_STRING: ingestion-storage-connection-string-1
       AZURE_INGESTION_CACHE_STORAGE_CONNECTION_STRING: ingestion-cache-connection-string-1
       INGESTION_ENCRYPTION_KEY: encryption-key-ingestion
-    hakv1test:
+    hakv1anto:
       AZURE_OPENAI_API_ENDPOINT: cognitive-account-swedencentral-ep
       AZURE_DOCUMENT_INTELLIGENCE_ENDPOINTS: azure-document-intelligence-endpoints
 volumeMounts:

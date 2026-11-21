@@ -178,6 +178,7 @@ variable "kv_sku" {
 variable "terraform_service_principal_object_id" {
   description = "Object ID of the Terraform service principal (created in day-0/bootstrap)."
   type        = string
+  default     = null # unused: Option A runs Terraform as the logged-in user (data.azuread_client_config.current)
 }
 
 variable "cluster_name" {
@@ -241,6 +242,33 @@ variable "kubernetes_version" {
   default     = "1.34.0"
 }
 
+variable "aks_private_cluster_enabled" {
+  description = <<-EOT
+    true  = private API server: reachable only from inside the VNet (VPN, jumpbox, az aks command invoke).
+    false = public API server, restricted to aks_api_server_authorized_ip_ranges.
+    Changing this replaces (destroys and recreates) the cluster.
+  EOT
+  type        = bool
+  default     = true
+}
+
+variable "aks_api_server_authorized_ip_ranges" {
+  description = "CIDRs allowed to reach the API server when aks_private_cluster_enabled = false. Ignored when the cluster is private, so it can stay set while you switch back and forth."
+  type        = list(string)
+  default     = null
+
+  validation {
+    condition     = var.aks_api_server_authorized_ip_ranges == null ? true : alltrue([for c in var.aks_api_server_authorized_ip_ranges : can(cidrhost(c, 0))])
+    error_message = "Each entry must be a valid CIDR, e.g. \"203.0.113.10/32\"."
+  }
+
+  # A public cluster without an allowlist would accept connections from the whole internet.
+  validation {
+    condition     = var.aks_private_cluster_enabled || try(length(var.aks_api_server_authorized_ip_ranges), 0) > 0
+    error_message = "A public cluster (aks_private_cluster_enabled = false) needs at least one entry in aks_api_server_authorized_ip_ranges, e.g. [\"203.0.113.10/32\"]."
+  }
+}
+
 variable "aks_segregated_node_and_pod_subnets_enabled" {
   description = "Whether to enable segregated node and pod subnets for the AKS cluster"
   type        = bool
@@ -295,6 +323,89 @@ variable "prometheus_ux_recording_rules" {
     expression = string
     labels     = optional(map(string))
   }))
+  default = null
+}
+
+# Prometheus alert rules (values in environments/<env>/prometheus-rules.auto.tfvars).
+# Types mirror the azure-kubernetes-service module's prometheus-variables.tf.
+variable "prometheus_node_alert_rules" {
+  description = "Node level alert rules for Prometheus monitoring"
+  type = list(object({
+    action = optional(object({
+      action_group_id = string
+    }))
+    alert       = optional(string)
+    annotations = optional(map(string))
+    enabled     = optional(bool)
+    expression  = string
+    for         = optional(string)
+    labels      = optional(map(string))
+    record      = optional(string)
+    alert_resolution = optional(object({
+      auto_resolved   = bool
+      time_to_resolve = string
+    }))
+    severity = optional(number)
+  }))
+  default = null
+}
+
+variable "prometheus_cluster_alert_rules" {
+  description = "Cluster level alert rules for Prometheus monitoring"
+  type = list(object({
+    action = optional(object({
+      action_group_id = string
+    }))
+    alert       = optional(string)
+    annotations = optional(map(string))
+    enabled     = optional(bool)
+    expression  = string
+    for         = optional(string)
+    labels      = optional(map(string))
+    record      = optional(string)
+    alert_resolution = optional(object({
+      auto_resolved   = bool
+      time_to_resolve = string
+    }))
+    severity = optional(number)
+  }))
+  default = null
+}
+
+variable "prometheus_pod_alert_rules" {
+  description = "Pod level alert rules for Prometheus monitoring"
+  type = list(object({
+    action = optional(object({
+      action_group_id = string
+    }))
+    alert       = optional(string)
+    annotations = optional(map(string))
+    enabled     = optional(bool)
+    expression  = string
+    for         = optional(string)
+    labels      = optional(map(string))
+    record      = optional(string)
+    alert_resolution = optional(object({
+      auto_resolved   = bool
+      time_to_resolve = string
+    }))
+    severity = optional(number)
+  }))
+  default = null
+}
+
+variable "alert_configuration" {
+  description = "Not passed to the AKS module: alerts go to day-2's own action group (24-aks-action-group.tf, email = defender_security_contact_email), because the module's action group would collide with its name. Declared only so prometheus-rules.auto.tfvars does not raise an undeclared-variable warning."
+  type = object({
+    email_receiver = optional(object({
+      email_address = string
+      name          = optional(string, "aks-alerts-email")
+    }), null)
+    action_group = optional(object({
+      short_name = optional(string, "aks-alerts")
+      location   = optional(string, "germanywestcentral")
+    }), null)
+  })
   default = null
 }
 
@@ -621,6 +732,7 @@ variable "cluster_admin_user_ids" {
   type        = list(string)
 }
 
+# [ARGOCD-OIDC] Users given the application_support (Argo CD admin) role on the OIDC app; no effect when gitops_app_registration_enabled = false.
 variable "gitops_maintainer_user_ids" {
   description = "List of user object IDs that will be granted GitOps maintainer permissions"
   type        = list(string)
@@ -902,11 +1014,13 @@ variable "main_keyvault_secret_writer_group_display_name" {
 }
 
 # Application Registration
+# [ARGOCD-OIDC] Only used by the Argo CD OIDC app registration; ignored when gitops_app_registration_enabled = false.
 variable "application_registration_gitops_display_name" {
   description = "Display name for the GitOps application registration"
   type        = string
 }
 
+# [ARGOCD-OIDC] Names the OIDC app's Key Vault secrets (aad-app-<...>-client-id/-secret); ignored when gitops_app_registration_enabled = false.
 variable "application_secret_display_name" {
   description = "Display name for the GitOps application secret"
   type        = string
@@ -1361,3 +1475,27 @@ variable "dns_zones" {
 }
 
 
+
+# Entra ID objects. Creating them needs directory permissions (Groups Administrator / Application Developer
+# or the matching tenant settings). Turn them off in sandboxes where the deploying identity lacks those rights.
+variable "entra_groups_enabled" {
+  description = "Create the Entra ID security groups (10-azuread-groups.tf) and their role assignments."
+  type        = bool
+  default     = true
+}
+
+# [ARGOCD-OIDC] Master switch for Argo CD Entra ID (OIDC) login. When false, also switch off / adjust every place
+# tagged [ARGOCD-OIDC] (grep -rn "ARGOCD-OIDC" .):
+#   Terraform  day-2/11-application-registration.tf  app registration module (follows this switch via count)
+#              day-2/03-data.tf                      gitops_maintainer user lookup (only feeds the app; harmless)
+#   Helm       03_applications/argo-bootstrap.yaml.gotmpl               argoAuth: admin | oidc  (the Argo CD login switch;
+#                                                                       adds the argo-azure-entra-secret release for oidc)
+#              03_applications/test/apps/system/argo.yaml               must match argoAuth (helmfile checks it)
+#              03_applications/test/values/argo/argo-auth-admin.yaml    built-in admin login
+#              03_applications/test/values/argo/argo-auth-oidc.yaml     Entra ID login (needs this variable = true)
+#              03_applications/test/values/argo/argo-azure-entra-secret.yaml  only deployed with argoAuth: oidc
+variable "gitops_app_registration_enabled" {
+  description = "Create the Argo CD Entra ID app registration for OIDC login (11-application-registration.tf) and its Key Vault secrets."
+  type        = bool
+  default     = true
+}

@@ -1,11 +1,11 @@
 env:
-  ADMIN_FRONTEND_URL: https://test-hello.azure.unique.dev/admin
+  ADMIN_FRONTEND_URL: https://sb-trilaksono-001.unique.dev/admin
   AMQP_BENCHMARK_PREFETCH: 1
   ANONYMIZED_CHAT_INTERACTIONS_EXPORT: "false"
   AUDIT_LOG_DIR: /dev/stdout
   BENCHMARKS_PER_MINUTE_PER_PROCESS: 1
   CACHE_REDIS_DB: 3
-  CHAT_FRONTEND_URL: https://test-hello.azure.unique.dev/chat
+  CHAT_FRONTEND_URL: https://sb-trilaksono-001.unique.dev/chat
   DATABASE_CONNECTION_POOL_LIMIT: "30"
   ENABLE_CLIENT_INSIGHT_SHIPPER: "true"
   EXPORT_PROMPTS_ACCESS_CONTROL: "true"
@@ -41,7 +41,7 @@ env:
   ALLOW_CONTEXT_MEMORY_WITH_WEB_SEARCH_UN_22591: "true"
 image:
   tag: "2026.44.3"
-  repository: uqhacrtest.azurecr.io/backend-service-chat
+  repository: uqhacranto.azurecr.io/backend-service-chat
 resources:
   limits:
     cpu: 500m
@@ -51,14 +51,14 @@ resources:
     memory: 950Mi
 secretProvider:
   vaults:
-    hakv2test:
+    hakv2anto:
       DATABASE_URL: database-url-chat
-      PUBSUB_REDIS_HOST: uqharedis-test-host
-      PUBSUB_REDIS_PORT: uqharedis-test-port
-      PUBSUB_REDIS_PASSWORD: uqharedis-test-password
+      PUBSUB_REDIS_HOST: uqharedis-anto-host
+      PUBSUB_REDIS_PORT: uqharedis-anto-port
+      PUBSUB_REDIS_PASSWORD: uqharedis-anto-password
       AZURE_FGPT_STORAGE_CONNECTION_STRING: ingestion-storage-connection-string-1
       CHAT_LXM_ENCRYPTION_KEY: encryption-key-chat-lxm
-    hakv1test:
+    hakv1anto:
       AZURE_OPENAI_API_ENDPOINTS_JSON: azure-openai-endpoint-definitions
 serviceAccount:
   enabled: true

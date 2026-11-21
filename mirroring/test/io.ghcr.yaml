@@ -10,4 +10,4 @@ images:
   - name: stakater/reloader:v1.1.0
   - name: stakater/reloader:v1.4.2
 sourceRegistry: ghcr.io
-targetRegistry: uqhacrtest.azurecr.io
+targetRegistry: uqhacranto.azurecr.io

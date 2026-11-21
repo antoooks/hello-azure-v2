@@ -4,7 +4,7 @@ resources:
     metadata:
       annotations:
         appgw.ingress.kubernetes.io/backend-protocol: https
-        appgw.ingress.kubernetes.io/health-probe-hostname: test-hello.azure.unique.dev
+        appgw.ingress.kubernetes.io/health-probe-hostname: sb-trilaksono-001.unique.dev
         appgw.ingress.kubernetes.io/health-probe-port: "8543"
         appgw.ingress.kubernetes.io/request-timeout: "120"
         appgw.ingress.kubernetes.io/rewrite-rule-set: security-headers
@@ -14,7 +14,7 @@ resources:
     spec:
       ingressClassName: azure-application-gateway
       rules:
-        - host: test-hello.azure.unique.dev
+        - host: sb-trilaksono-001.unique.dev
           http:
             paths:
               - backend:
@@ -26,14 +26,14 @@ resources:
                 pathType: Prefix
       tls:
         - hosts:
-            - test-hello.azure.unique.dev
+            - sb-trilaksono-001.unique.dev
           secretName: kong-tls
   - apiVersion: networking.k8s.io/v1
     kind: Ingress
     metadata:
       annotations:
         appgw.ingress.kubernetes.io/backend-protocol: https
-        appgw.ingress.kubernetes.io/health-probe-hostname: api.test-hello.azure.unique.dev
+        appgw.ingress.kubernetes.io/health-probe-hostname: api.sb-trilaksono-001.unique.dev
         appgw.ingress.kubernetes.io/health-probe-port: "8543"
         appgw.ingress.kubernetes.io/request-timeout: "120"
         appgw.ingress.kubernetes.io/rewrite-rule-set: security-headers
@@ -43,7 +43,7 @@ resources:
     spec:
       ingressClassName: azure-application-gateway
       rules:
-        - host: api.test-hello.azure.unique.dev
+        - host: api.sb-trilaksono-001.unique.dev
           http:
             paths:
               - backend:
@@ -55,7 +55,7 @@ resources:
                 pathType: Prefix
       tls:
         - hosts:
-            - api.test-hello.azure.unique.dev
+            - api.sb-trilaksono-001.unique.dev
           secretName: kong-api-tls
 
   - apiVersion: networking.k8s.io/v1
@@ -63,7 +63,7 @@ resources:
     metadata:
       annotations:
         appgw.ingress.kubernetes.io/backend-protocol: https
-        appgw.ingress.kubernetes.io/health-probe-hostname: id.test-hello.azure.unique.dev
+        appgw.ingress.kubernetes.io/health-probe-hostname: id.sb-trilaksono-001.unique.dev
         appgw.ingress.kubernetes.io/health-probe-port: "8543"
         appgw.ingress.kubernetes.io/request-timeout: "120"
         appgw.ingress.kubernetes.io/rewrite-rule-set: security-headers
@@ -73,7 +73,7 @@ resources:
     spec:
       ingressClassName: azure-application-gateway
       rules:
-        - host: id.test-hello.azure.unique.dev
+        - host: id.sb-trilaksono-001.unique.dev
           http:
             paths:
               - backend:
@@ -85,7 +85,7 @@ resources:
                 pathType: Prefix
       tls:
         - hosts:
-            - id.test-hello.azure.unique.dev
+            - id.sb-trilaksono-001.unique.dev
           secretName: kong-zitadel-tls
 
   - apiVersion: networking.k8s.io/v1
@@ -93,7 +93,7 @@ resources:
     metadata:
       annotations:
         appgw.ingress.kubernetes.io/backend-protocol: https
-        appgw.ingress.kubernetes.io/health-probe-hostname: reflector.test-hello.azure.unique.dev
+        appgw.ingress.kubernetes.io/health-probe-hostname: reflector.sb-trilaksono-001.unique.dev
         appgw.ingress.kubernetes.io/health-probe-port: "8543"
         appgw.ingress.kubernetes.io/request-timeout: "120"
         appgw.ingress.kubernetes.io/rewrite-rule-set: security-headers
@@ -103,7 +103,7 @@ resources:
     spec:
       ingressClassName: azure-application-gateway
       rules:
-        - host: reflector.test-hello.azure.unique.dev
+        - host: reflector.sb-trilaksono-001.unique.dev
           http:
             paths:
               - backend:
@@ -115,5 +115,5 @@ resources:
                 pathType: Prefix
       tls:
         - hosts:
-            - reflector.test-hello.azure.unique.dev
+            - reflector.sb-trilaksono-001.unique.dev
           secretName: kong-reflector-tls

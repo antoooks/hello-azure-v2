@@ -2,7 +2,7 @@
 # TLS with its own CA, enforces host/path/method rules and stamps user and company headers on requests to
 # the platform.
 image:
-  registry: uqhacrtest.azurecr.io
+  registry: uqhacranto.azurecr.io
   repository: unique/sbx-gateway
   tag: "2026.44.3"
   useDigest: false
@@ -29,15 +29,15 @@ egressGateway:
   # - sbx-storage: checkpoint restore/save
   # - PyPI: package installs inside sandboxes
   allowHosts:
-    api.test-hello.azure.unique.dev: true
-    uqhastoragetest.blob.core.windows.net: true
+    api.sb-trilaksono-001.unique.dev: true
+    uqhastorageanto.blob.core.windows.net: true
     sbx-storage.sbx.svc.cluster.local: true
     pypi.org: true
     files.pythonhosted.org: true
   allowPaths:
-    api.test-hello.azure.unique.dev:
+    api.sb-trilaksono-001.unique.dev:
       - /scoped/ingestion/upload
-    uqhastoragetest.blob.core.windows.net:
+    uqhastorageanto.blob.core.windows.net:
       - /ingestion/*/cont_*
     sbx-storage.sbx.svc.cluster.local:
       - /v1/checkpoint
@@ -47,11 +47,11 @@ egressGateway:
     files.pythonhosted.org:
       - /packages/*
   allowMethods:
-    api.test-hello.azure.unique.dev:
+    api.sb-trilaksono-001.unique.dev:
       - PUT
     # GET/HEAD for SAS reads; PUT only for the preview PDF the SDK writes next to a blob it just uploaded,
     # bounded by the SAS token in the query string and the path filter above.
-    uqhastoragetest.blob.core.windows.net:
+    uqhastorageanto.blob.core.windows.net:
       - GET
       - HEAD
       - PUT

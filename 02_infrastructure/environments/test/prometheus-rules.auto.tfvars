@@ -646,7 +646,7 @@ EOF
 # Alert Configuration
 alert_configuration = {
   email_receiver = {
-    email_address = "admin@example.com"
+    email_address = "kurnianto.trilaksono@unique.ai"
     name          = "aks-admin-alerts"
   }
   action_group = {

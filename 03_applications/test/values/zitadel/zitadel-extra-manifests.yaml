@@ -19,22 +19,22 @@ extraManifests:
     data:
       - secretKey: ZITADEL_DATABASE_POSTGRES_HOST
         remoteRef:
-          key: psql-oefyzgkn-host # NOTE: needs to match the key in the hakv2test key-vault
+          key: psql-oefyzgkn-host # NOTE: needs to match the key in the hakv2anto key-vault
       - secretKey: ZITADEL_DATABASE_POSTGRES_PORT
         remoteRef:
-          key: psql-oefyzgkn-port # NOTE: needs to match the key in the hakv2test key-vault
+          key: psql-oefyzgkn-port # NOTE: needs to match the key in the hakv2anto key-vault
       - secretKey: ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME
         remoteRef:
-          key: psql-oefyzgkn-username # NOTE: needs to match the key in the hakv2test key-vault
+          key: psql-oefyzgkn-username # NOTE: needs to match the key in the hakv2anto key-vault
       - secretKey: ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD
         remoteRef:
-          key: psql-oefyzgkn-password # NOTE: needs to match the key in the hakv2test key-vault
+          key: psql-oefyzgkn-password # NOTE: needs to match the key in the hakv2anto key-vault
       - secretKey: ZITADEL_DATABASE_POSTGRES_USER_PASSWORD
         remoteRef:
-          key: zitadel-db-user-password # NOTE: needs to match the key in the hakv2test key-vault
+          key: zitadel-db-user-password # NOTE: needs to match the key in the hakv2anto key-vault
       - secretKey: masterkey
         remoteRef:
-          key: zitadel-master-key # NOTE: needs to match the key in the hakv2test key-vault
+          key: zitadel-master-key # NOTE: needs to match the key in the hakv2anto key-vault
 
 
 - kind: Secret
@@ -140,7 +140,7 @@ extraManifests:
     namespace: unique
   spec:
     hostnames:
-      - id.test-hello.azure.unique.dev
+      - id.sb-trilaksono-001.unique.dev
     parentRefs:
       - group: gateway.networking.k8s.io
         kind: Gateway

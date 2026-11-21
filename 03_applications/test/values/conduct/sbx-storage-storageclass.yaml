@@ -5,7 +5,7 @@ resources:
       name: sbx-backup-azurefile
     provisioner: file.csi.azure.com
     parameters:
-      storageAccount: uqhastoragetest
+      storageAccount: uqhastorageanto
       resourceGroup: resource-group-sensitive
       skuName: Standard_LRS
     reclaimPolicy: Delete

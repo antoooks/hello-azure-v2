@@ -1,5 +1,5 @@
 image:
-  registry: uqhacrtest.azurecr.io
+  registry: uqhacranto.azurecr.io
   repository: ai-service-assistants-agentic-table
   tag: "2026.44.3"
   useDigest: false

@@ -8,7 +8,7 @@ This directory contains the infrastructure Terraform configurations organized by
 02_infrastructure/
 ├── day-1/          # Foundational infrastructure (resource groups, networking, managed identities, custom roles)
 ├── day-2/          # Identity/governance resources (Azure AD groups, application registration, federated credentials)
-├── day-3/          # Secure access resources (Azure Bastion host for secure RDP/SSH access)
+├── day-3/          # OPTIONAL: secure access resources (Azure Bastion host for secure RDP/SSH access)
 ├── environments/test/           # Test environment-specific variables
 │   ├── 00-config-day-1.auto.tfvars      # Day-1 provider & backend configuration
 │   ├── 00-config-day-2.auto.tfvars      # Day-2 provider & backend configuration
@@ -90,7 +90,7 @@ terraform apply \
   -var-file=../environments/test/prometheus-rules.auto.tfvars
 ```
 
-**Day-3 (Secure Access - Azure Bastion):**
+**Day-3 (Secure Access - Azure Bastion), optional:** skip this unless you need Bastion. See [Day-3: Azure Bastion (optional)](#day-3-azure-bastion-optional).
 ```bash
 cd day-3
 terraform plan \
@@ -104,7 +104,7 @@ terraform apply \
 
 **Important:** 
 - Day-2 must be deployed **after** day-1, as it references resources created in day-1 using data sources (by name and resource group).
-- Day-3 must be deployed **after** day-1, as it requires the VNET and AzureBastionSubnet created in day-1, as well as the Log Analytics workspace for diagnostics.
+- Day-3 is **optional**. If you deploy it, deploy it **after** day-1, because it requires the VNET and AzureBastionSubnet created in day-1, as well as the Log Analytics workspace for diagnostics.
 
 ### Environment-Specific Files
 
@@ -119,6 +119,8 @@ terraform apply \
 - **backend-config-day-2.hcl**: Backend configuration for day-2 terraform init (contains only backend settings, used with `-backend-config` flag)
 - **backend-config-day-3.hcl**: Backend configuration for day-3 terraform init (contains only backend settings, used with `-backend-config` flag)
 
+> :warning: **`env` must be unique per sandbox and identical across day-1, day-2 and day-3.** Most resource names are built from `env`. Many of them must be unique across all of Azure (Key Vault, storage, ACR, Redis, Cognitive Services subdomains) and the custom roles across the tenant, so two sandboxes with the same `env` clash. Choose it before the first day-1 apply: changing it later replaces most resources. This `env` is separate from the day-0 `env`, which should stay unchanged. See [How `env` works in day-0 and day-N](../01_bootstrap/README.md#how-env-works-in-day-0-and-day-n-and-in-sandbox-subscriptions).
+
 ## Deployment Order
 
 1. **day-1**: Deploy foundational infrastructure first
@@ -130,7 +132,8 @@ terraform apply \
    - Creates Azure AD groups, application registrations, federated credentials
    - State stored in: `terraform-infra-v2-day-2.tfstate`
 
-3. **day-3**: Deploy secure access resources (depends on resources from day-1)
+3. **day-3 (optional)**: Deploy secure access resources (depends on resources from day-1)
+   - Nothing else depends on it: day-1, day-2, `03_applications` and the application deployment work without it. Deploy it only when you need Bastion. See [Day-3: Azure Bastion (optional)](#day-3-azure-bastion-optional).
    - Uses data sources to look up day-1 resources by name and resource group
    - Creates Azure Bastion host with Standard SKU, tunneling, and native client support
    - Configures diagnostic logging to Log Analytics workspace
@@ -220,9 +223,37 @@ terraform init -backend-config=../environments/test/backend-config-day-3.hcl
 - **Idempotent**: The import scripts will skip resources that are already in state
 - **Expected drifts**: After import, running `terraform plan` will show cosmetic drifts (API version differences, module-internal changes). These are safe and documented in the script output
 
-## Day-3: Azure Bastion
+## Day-3: Azure Bastion (optional)
 
 Day-3 deploys Azure Bastion, a fully managed PaaS service that provides secure RDP/SSH connectivity to your virtual machines directly through the Azure Portal without exposing them to the internet.
+
+> :information_source: **Day-3 is optional.** No other stage depends on it. Day-1 and day-2 do not reference any day-3 resource or output, and the Helm values in `03_applications` do not use Bastion. In CI, `test.infrastructure.tf.plan.yaml` only runs `terraform plan` for day-3. It is never applied automatically.
+
+### When you need it
+
+- You need SSH or RDP access to machines in the VNet that have no public IP, for example a jumpbox to reach the private endpoints (PostgreSQL, Redis, Key Vault, storage) from inside the network.
+- You want a tunnel into the VNet with `az network bastion ssh` or `az network bastion tunnel`.
+
+You do **not** need it to use the deployed applications, which are published through the Application Gateway.
+
+**Reaching the AKS API (`kubectl`, `helm`):** the AKS cluster is **private**. The `azure-kubernetes-service` module defaults to `private_cluster_enabled = true`, and day-2 does not override it. Its API server is only reachable from inside the VNet, so `kubectl` from a laptop does not work directly. Use one of these instead:
+
+| Option | Needs day-3? | Notes |
+|---|---|---|
+| `az aks command invoke -g resource-group-core -n aks-<env> --command "kubectl get pods -A"` | No | Runs the command in the cluster through the Azure API. Good for occasional commands. Use `--file` to send manifests or values files. |
+| GitHub runners inside the VNet (`gh-test`) | No | This is how CI reaches the cluster: the workflows run on the `ha.uq.test` runner group. Requires the GitHub organization setup described under `gh-test`. |
+| Bastion (day-3) + a jumpbox VM in the VNet | Yes | For interactive work. This repository does not create the jumpbox VM. See [Connecting to AKS via Azure Bastion](#usage-example-connecting-to-aks-via-azure-bastion). |
+
+### Cost
+
+Bastion with the Standard SKU, which `00-parameters-day-3.auto.tfvars` sets, is billed **per hour for as long as it exists, whether or not anyone uses it**, plus its Standard public IP. It is one of the more expensive items in this setup. In sandbox subscriptions, deploy it only when you need it and destroy it afterwards.
+
+### Skipping, adding and removing it
+
+- **To skip it:** do not run `terraform init` or `terraform apply` in `day-3`.
+- **Keep the empty `AzureBastionSubnet` that day-1 creates.** An empty subnet costs nothing, and day-3 needs it if you deploy Bastion later. You can remove it from `day-1/02-locals.tf` (`snet-bastion`) if you never want Bastion, but that requires another day-1 apply.
+- **To add it later:** run `terraform init` and `terraform apply` in `day-3`, using the commands in [Running Terraform Plan/Apply](#running-terraform-planapply).
+- **To remove it:** run `terraform destroy` in `day-3` with the same var files. This only removes the Bastion host, its public IP, its NSG and the diagnostic setting, and leaves everything else alone.
 
 ### Features
 

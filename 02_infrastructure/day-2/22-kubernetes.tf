@@ -1,24 +1,53 @@
 # Kubernetes Cluster (AKS)
 # This module creates an Azure Kubernetes Service cluster with node pools and monitoring
 
+locals {
+  # Route every Prometheus alert rule without an explicit action to day-2's action group.
+  prometheus_alert_default_action = { action_group_id = azurerm_monitor_action_group.aks_alerts.id }
+
+  prometheus_node_alert_rules = var.prometheus_node_alert_rules == null ? null : [
+    for r in var.prometheus_node_alert_rules : merge(r, { action = r.action != null ? r.action : local.prometheus_alert_default_action })
+  ]
+  prometheus_cluster_alert_rules = var.prometheus_cluster_alert_rules == null ? null : [
+    for r in var.prometheus_cluster_alert_rules : merge(r, { action = r.action != null ? r.action : local.prometheus_alert_default_action })
+  ]
+  prometheus_pod_alert_rules = var.prometheus_pod_alert_rules == null ? null : [
+    for r in var.prometheus_pod_alert_rules : merge(r, { action = r.action != null ? r.action : local.prometheus_alert_default_action })
+  ]
+}
+
 module "kubernetes_cluster" {
   source = "github.com/Unique-AG/terraform-modules.git//modules/azure-kubernetes-service?ref=73369958885f06c85f4561be024a1c543429f3cf" # azure-kubernetes-service-9.2.0
 
   kubernetes_version                      = var.kubernetes_version
   application_gateway_id                  = module.application_gateway.appgw_id
   segregated_node_and_pod_subnets_enabled = var.aks_segregated_node_and_pod_subnets_enabled
-  cluster_name                            = local.cluster_name
-  node_rg_name                            = var.node_resource_group_name
-  resource_group_location                 = data.azurerm_resource_group.core.location
-  resource_group_name                     = data.azurerm_resource_group.core.name
-  default_subnet_nodes_id                 = data.azurerm_subnet.aks_nodes.id
-  default_subnet_pods_id                  = data.azurerm_subnet.aks_pods.id
-  tags                                    = var.tags
-  tenant_id                               = data.azurerm_client_config.current.tenant_id
-  defender_log_analytics_workspace_id     = data.azurerm_log_analytics_workspace.log_analytics.id
-  prometheus_node_recording_rules         = var.prometheus_node_recording_rules
-  prometheus_kubernetes_recording_rules   = var.prometheus_kubernetes_recording_rules
-  prometheus_ux_recording_rules           = var.prometheus_ux_recording_rules
+  private_cluster_enabled                 = var.aks_private_cluster_enabled
+  # Authorized IP ranges exist only for a public API server, so they are dropped when the cluster is private.
+  api_server_authorized_ip_ranges = var.aks_private_cluster_enabled ? null : var.aks_api_server_authorized_ip_ranges
+  # Private-cluster-only settings: Azure rejects them on a public cluster (InvalidPrivateDNSZoneMode),
+  # so send null/false when public. Private clusters keep the module defaults ("None" / true).
+  private_dns_zone_id                   = var.aks_private_cluster_enabled ? "None" : null
+  private_cluster_public_fqdn_enabled   = var.aks_private_cluster_enabled
+  cluster_name                          = local.cluster_name
+  node_rg_name                          = var.node_resource_group_name
+  resource_group_location               = data.azurerm_resource_group.core.location
+  resource_group_name                   = data.azurerm_resource_group.core.name
+  default_subnet_nodes_id               = data.azurerm_subnet.aks_nodes.id
+  default_subnet_pods_id                = data.azurerm_subnet.aks_pods.id
+  tags                                  = var.tags
+  tenant_id                             = data.azurerm_client_config.current.tenant_id
+  defender_log_analytics_workspace_id   = data.azurerm_log_analytics_workspace.log_analytics.id
+  prometheus_node_recording_rules       = var.prometheus_node_recording_rules
+  prometheus_kubernetes_recording_rules = var.prometheus_kubernetes_recording_rules
+  prometheus_ux_recording_rules         = var.prometheus_ux_recording_rules
+  # Alert rules notify day-2's own action group (24-aks-action-group.tf). The module's action group is
+  # disabled (email_receiver = null) because it would use the same name, "<cluster>-alerts", and collide.
+  # alert_configuration must still be a non-null object: the module reads .email_receiver without a null check.
+  prometheus_node_alert_rules    = local.prometheus_node_alert_rules
+  prometheus_cluster_alert_rules = local.prometheus_cluster_alert_rules
+  prometheus_pod_alert_rules     = local.prometheus_pod_alert_rules
+  alert_configuration            = { email_receiver = null, action_group = null }
 
   # Same values as the 5.7.1 defaults; passing the object drops the module's min/max defaults.
   default_node_pool = {

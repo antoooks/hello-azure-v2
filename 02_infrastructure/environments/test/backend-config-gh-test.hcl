@@ -1,5 +1,5 @@
 resource_group_name  = "rg-terraform-state-test"
-storage_account_name = "uqhaztfstatetest"
-container_name       = "tfstate"
+storage_account_name = "sbtrilaksono001tfstate"
+container_name       = "sb-trilaksono-001-tfstate"
 key                  = "gh-test.tfstate"
-subscription_id      = "782871a0-bcee-44fb-851f-ccd3e69ada2a"
+subscription_id      = "1c01db23-b7f6-4fd8-8917-e67bd174e977"

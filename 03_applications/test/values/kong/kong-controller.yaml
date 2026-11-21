@@ -1,6 +1,6 @@
 controller:
   image:
-    repository: uqhacrtest.azurecr.io/kong/kubernetes-ingress-controller
+    repository: uqhacranto.azurecr.io/kong/kubernetes-ingress-controller
     tag: 3.4.4
   ingressController:
     envFrom:
@@ -31,7 +31,7 @@ controller:
         controllerName: konghq.com/kic-gateway-controller
 gateway:
   image:
-    repository: uqhacrtest.azurecr.io/kong
+    repository: uqhacranto.azurecr.io/kong
     tag: 3.9.0
   nodeSelector:
     scalability: steady
@@ -60,10 +60,10 @@ gateway:
     proxy:
       enabled: true
       clusterIssuer: letsencrypt-azure-dns
-      commonName: test-hello.azure.unique.dev
+      commonName: sb-trilaksono-001.unique.dev
       dnsNames:
-        - test-hello.azure.unique.dev
-        - "*.test-hello.azure.unique.dev"
+        - sb-trilaksono-001.unique.dev
+        - "*.sb-trilaksono-001.unique.dev"
     admin:
       enabled: false
     cluster:

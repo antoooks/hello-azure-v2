@@ -6,7 +6,7 @@ applicationsets:
     goTemplate: true
     generators:
       - git:
-          repoURL: https://github.com/Unique-AG/hello-azure-v2
+          repoURL: https://github.com/antoooks/hello-azure-v2
           revision: main
           files:
           - path: "03_applications/test/apps/chat/*.yaml"
@@ -56,7 +56,7 @@ applicationsets:
     goTemplate: true
     generators:
       - git:
-          repoURL: https://github.com/Unique-AG/hello-azure-v2
+          repoURL: https://github.com/antoooks/hello-azure-v2
           revision: main
           files:
           - path: "03_applications/test/apps/conduct/*.yaml"
@@ -107,7 +107,7 @@ applicationsets:
     goTemplate: true
     generators:
     - git:
-        repoURL: https://github.com/Unique-AG/hello-azure-v2
+        repoURL: https://github.com/antoooks/hello-azure-v2
         revision: main
         files:
         - path: "03_applications/test/apps/system/*.yaml"

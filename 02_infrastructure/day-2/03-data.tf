@@ -8,6 +8,8 @@ data "azuread_client_config" "current" {}
 
 data "azuread_application_published_app_ids" "well_known" {}
 
+# [ARGOCD-OIDC] Only feeds the Argo CD OIDC app registration (11-application-registration.tf). Read-only, so it can
+# stay when gitops_app_registration_enabled = false; set gitops_maintainer_user_ids = [] to skip the lookup.
 data "azuread_user" "gitops_maintainer" {
   for_each  = toset(var.gitops_maintainer_user_ids)
   object_id = each.value
@@ -119,15 +121,22 @@ data "azurerm_dns_zone" "dns_zone" {
 # Azure AD Service Principal for Terraform
 # The terraform service principal is created in day-0/bootstrap
 # To find the correct object_id, run: az ad sp list --display-name "terraform" --query "[].{objectId:id,displayName:displayName}" -o table
-data "azuread_service_principal" "terraform" {
-  object_id = var.terraform_service_principal_object_id
-}
+# Option A: no Terraform service principal; role assignments target the logged-in identity instead.
+# data "azuread_service_principal" "terraform" {
+#   object_id = var.terraform_service_principal_object_id
+# }
 
 # NOTE: This data source has been moved to day-1/38-role-assignments.tf
 # to support role assignments created in day-1.
 
 data "azuread_user" "telemetry_observer" {
   for_each  = toset(var.telemetry_observer_user_ids)
+  object_id = each.value
+}
+
+# Users granted kubectl access to AKS (25-role-assignments.tf). The lookup fails the plan early on a wrong object ID.
+data "azuread_user" "cluster_admin" {
+  for_each  = toset(var.cluster_admin_user_ids)
   object_id = each.value
 }
 

@@ -14,11 +14,11 @@ resources:
               azureDNS:
                 subscriptionID: 782871a0-bcee-44fb-851f-ccd3e69ada2a
                 resourceGroupName: rg-vnet-002  # this has to match the resource group of the Azure DNS zone
-                hostedZoneName: test-hello.azure.unique.dev
+                hostedZoneName: sb-trilaksono-001.unique.dev
                 environment: AzurePublicCloud
                 managedIdentity:
                   # Kubelet identity client ID - obtain from: terraform output cluster_kublet_client_id
                   clientID: 3a75d7b6-c4e9-4aa2-9ae3-395cfd7e133e # aks-test kubelet identity
             selector:
               dnsZones:
-                - test-hello.azure.unique.dev
+                - sb-trilaksono-001.unique.dev

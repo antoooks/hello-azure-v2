@@ -1,0 +1,21 @@
+# [ARGOCD-OIDC] Argo CD login overlay for argoAuth: oidc (see argo-bootstrap.yaml.gotmpl).
+# Entra ID (OIDC) login; the built-in admin account is disabled. Requires:
+#   - day-2: gitops_app_registration_enabled = true (creates the Entra app and its Key Vault secrets)
+#   - the argo-azure-entra-secret release, which mounts the app's client ID/secret
+#     (values in argo-azure-entra-secret.yaml; added automatically by the helmfile when argoAuth = oidc)
+#   - <tenant-id> below replaced with your tenant ID
+configs:
+  cm:
+    admin.enabled: false
+    oidc.config: |
+      name: AzureAD
+      issuer: https://login.microsoftonline.com/<tenant-id>/v2.0
+      clientID: $argo-azure-entra-secret-sscsid-keeper:oidc.azure.client_id
+      clientSecret: $argo-azure-entra-secret-sscsid-keeper:oidc.azure.client_secret
+      requestedIDTokenClaims:
+        groups:
+          essential: true
+      requestedScopes:
+        - openid
+        - profile
+        - email

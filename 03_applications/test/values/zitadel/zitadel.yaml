@@ -1,8 +1,8 @@
 chownImage:
-  repository: uqhacrtest.azurecr.io/alpine
+  repository: uqhacranto.azurecr.io/alpine
   tag: 3.19
 image:
-  repository: uqhacrtest.azurecr.io/zitadel/zitadel
+  repository: uqhacranto.azurecr.io/zitadel/zitadel
   tag: v3.4.8
 nodeSelector:
   scalability: steady
@@ -72,7 +72,7 @@ zitadel:
           Password: "RootPassword1!" # must be changed on first login so not a problem
   configmapConfig:
     # All values: https://github.com/zitadel/zitadel/blob/main/cmd/defaults.yaml
-    ExternalDomain: id.test-hello.azure.unique.dev
+    ExternalDomain: id.sb-trilaksono-001.unique.dev
     ExternalPort: 443
     ExternalSecure: true
     LogStore:

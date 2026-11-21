@@ -17,6 +17,16 @@ It also includes a setup of ArgoCD used for deploying workloads to the AKS clust
 ### Prerequisites
 - Azure CLI installed and logged in (`az login`)
 - Terraform 1.5+ installed
+- [Helmfile](https://helmfile.readthedocs.io/) installed, together with Helm and the `helm-diff` plugin (used by `03_applications` to bootstrap Argo CD; `helmfile apply` and `helmfile diff` need `helm-diff`):
+  ```bash
+  # macOS (Homebrew)
+  brew install helm helmfile
+  helmfile init   # installs the required Helm plugins, including helm-diff
+
+  # verify
+  helmfile --version && helm plugin list
+  ```
+  Other platforms: see the [Helmfile installation guide](https://helmfile.readthedocs.io/en/latest/#installation).
 
 
 **Ready to get started?** Begin with the [Configuration Guide](/01_bootstrap/README.md) to understand how to create remote Terraform state storage, then follow the guides in 02_infrastructure and 03_applications.

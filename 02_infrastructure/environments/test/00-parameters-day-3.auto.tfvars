@@ -1,5 +1,5 @@
 # Day-3 specific parameters
-env = "test"
+env = "anto"
 
 # Tags
 tags = {

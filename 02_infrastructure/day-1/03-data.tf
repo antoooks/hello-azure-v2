@@ -19,6 +19,8 @@ data "azuread_client_config" "current" {}
 
 data "azuread_application_published_app_ids" "well_known" {}
 
+# [ARGOCD-OIDC] Leftover: nothing in day-1 uses this lookup. The Argo CD OIDC app is created in day-2, so no
+# change is needed here when OIDC is off.
 data "azuread_user" "gitops_maintainer" {
   for_each  = toset(var.gitops_maintainer_user_ids)
   object_id = each.value
@@ -33,6 +35,7 @@ data "azuread_user" "keyvault_secret_writer" {
 # Terraform Service Principal - needed for Key Vault role assignments
 # Uses object_id to uniquely identify the SP (multiple SPs may have the same display name)
 # To find the correct object_id, run: az ad sp list --display-name "terraform" --query "[].{objectId:id,displayName:displayName}" -o table
-data "azuread_service_principal" "terraform" {
-  object_id = var.terraform_service_principal_object_id
-}
+# Option A: no Terraform service principal; role assignments target the logged-in identity instead.
+# data "azuread_service_principal" "terraform" {
+#   object_id = var.terraform_service_principal_object_id
+# }

@@ -2,10 +2,10 @@ spec:
   name: chat-task-scheduler
   autoSync: false
   sources:
-    - repoURL: "https://github.com/Unique-AG/hello-azure-v2"
+    - repoURL: "https://github.com/antoooks/hello-azure-v2"
       targetRevision: main
       ref: values
-    - repoURL: uqhacrtest.azurecr.io/helm
+    - repoURL: uqhacranto.azurecr.io/helm
       chart: chat
       targetRevision: "2026.44.3"
       helm:
