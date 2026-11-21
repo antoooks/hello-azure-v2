@@ -12,4 +12,4 @@ replicaCount: 2
 workloadIdentity:
   azure:
     enabled: true
-    clientId: 1dc12421-3b16-48cd-8b25-497234379625 # aks-id-test
+    clientId: dab5987e-78fe-48a8-986c-9e8c09f2321a # aks-id-anto

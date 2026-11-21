@@ -31,11 +31,93 @@ The login mode is set by `argoAuth` in [argo-bootstrap.yaml.gotmpl](argo-bootstr
 | `admin` (default) | Built-in `admin` account, username/password | [argo-auth-admin.yaml](test/values/argo/argo-auth-admin.yaml) | nothing |
 | `oidc` | Entra ID (Azure AD) | [argo-auth-oidc.yaml](test/values/argo/argo-auth-oidc.yaml) | `gitops_app_registration_enabled = true` in `02_infrastructure` day-2; tenant ID in the overlay; Key Vault values in [argo-azure-entra-secret.yaml](test/values/argo/argo-azure-entra-secret.yaml) |
 
-To switch modes:
+The mode is set in two places, and they must match:
 
-1. Set `argoAuth` in `argo-bootstrap.yaml.gotmpl`.
-2. Make [apps/system/argo.yaml](test/apps/system/argo.yaml) match, because Argo CD manages itself from that file: use the matching `argo-auth-<mode>.yaml` in the `argo-cd` valueFiles, and uncomment the `sscsid-keeper` source for `oidc` (keep it commented out for `admin`). `helmfile` stops with an error that says what to change if the two disagree.
-3. Run `helmfile apply -e test -f argo-bootstrap.yaml.gotmpl`.
+- `argoAuth` in `argo-bootstrap.yaml.gotmpl`, which is used when you run `helmfile`.
+- [apps/system/argo.yaml](test/apps/system/argo.yaml), which Argo CD uses to manage itself.
+
+If the two disagree, `helmfile` stops with an error that says what to change.
+
+> **Argo CD manages itself from GitHub `main`, not from your local checkout.** Push your changes **before** anyone syncs the `argocd` app. Otherwise the sync restores whatever login mode is on `main`. See [Fixing a login mode that doesn't match Git](#fixing-a-login-mode-that-doesnt-match-git).
+
+### Switching to Entra ID (OIDC) login
+
+1. **Create the Entra app (Terraform, `02_infrastructure` day-2).** In `environments/test/00-parameters-day-2.auto.tfvars`:
+   - Set `gitops_app_registration_enabled = true`.
+   - Put the users who should be Argo CD admins in `gitops_maintainer_user_ids`. Terraform gives them the `application_support` app role, which the Argo CD RBAC config maps to `role:admin` in [argo.yaml](test/values/argo/argo.yaml).
+
+   Then apply day-2. The identity that runs Terraform must be allowed to create app registrations. In a sandbox where it can't (`403 Authorization_RequestDenied`), OIDC login isn't possible.
+
+2. **Collect the values the cluster needs:**
+
+   ```bash
+   az account show --query tenantId -o tsv                                   # tenant ID
+   az aks show -g resource-group-core -n aks-anto \
+     --query addonProfiles.azureKeyvaultSecretsProvider.identity.clientId -o tsv   # Key Vault CSI identity (client ID)
+   az keyvault secret list --vault-name <sensitive-kv> \
+     --query "[?starts_with(name,'aad-app-')].name" -o tsv                   # client-id / client-secret secret names
+   ```
+
+   `<sensitive-kv>` is the sensitive Key Vault, `hakv2<env>`, for example `hakv2anto`.
+
+3. **Fill in the values files:**
+   - [argo-azure-entra-secret.yaml](test/values/argo/argo-azure-entra-secret.yaml): set `spc.kvName`, `spc.tenantId`, `spc.identityId` and the two `kvObjectName` entries (`...-client-id`, `...-client-secret`). Also check that `keeper.image.repository` points to your ACR.
+   - [argo-auth-oidc.yaml](test/values/argo/argo-auth-oidc.yaml): check that the tenant ID in the `issuer` URL matches yours.
+
+4. **Switch the mode in both places:**
+   - `argo-bootstrap.yaml.gotmpl`: `argoAuth: oidc`
+   - [apps/system/argo.yaml](test/apps/system/argo.yaml): uncomment the `sscsid-keeper` source, and change `argo-auth-admin.yaml` to `argo-auth-oidc.yaml` in the `argo-cd` valueFiles.
+
+5. **Commit and push to `main`.**
+
+6. **Apply:**
+
+   ```bash
+   helmfile apply -e test -f argo-bootstrap.yaml.gotmpl
+   ```
+
+   This installs the `argo-azure-entra-secret` release first, then upgrades `argo`.
+
+7. **Check that it worked:**
+
+   ```bash
+   kubectl -n unique get cm argocd-cm -o jsonpath='{.data.admin\.enabled}{"\n"}'   # expect: false
+   kubectl -n unique get pods | grep sscsid-keeper                                 # expect: Running
+   kubectl -n unique get secret argo-azure-entra-secret-sscsid-keeper              # created from Key Vault
+   ```
+
+   The login page should now show **Log in via AzureAD**.
+
+> With OIDC on, the `admin` account is **disabled**. If the Entra app, its Key Vault secrets or the keeper pod break, nobody can log in to the UI. To get back in, switch to admin login with `kubectl` and `helmfile` (next section).
+
+### Switching back to admin login
+
+1. In `argo-bootstrap.yaml.gotmpl`, set `argoAuth: admin`.
+2. In [apps/system/argo.yaml](test/apps/system/argo.yaml), comment out the `sscsid-keeper` source and use `argo-auth-admin.yaml` in the `argo-cd` valueFiles.
+3. Commit and push to `main`.
+4. Run `helmfile apply -e test -f argo-bootstrap.yaml.gotmpl`, then do the cleanup in the next section. Helm leaves `oidc.config` and the keeper objects behind.
+5. Optional: set `gitops_app_registration_enabled = false` in day-2 to remove the Entra app.
+
+### Fixing a login mode that doesn't match Git
+
+This happens when a change reaches the cluster outside of Helm, for example when the `argocd` app is synced from a `main` that has the other login mode. You'll see one of these:
+
+- `helmfile apply` reports no changes, but the live `argocd-cm` is still in the old mode. Helm compares against its own record of the release, not against the cluster.
+- `helmfile sync` fails with `conflict occurred while applying object ... conflicts with "argocd-controller"`. Helm 4 uses server-side apply, and Argo CD now owns those fields.
+
+To fix it:
+
+```bash
+# 1. Make Helm reapply its manifest and take the conflicting fields back from Argo CD
+helmfile -e test -f argo-bootstrap.yaml.gotmpl -l name=argo sync --args="--force-conflicts"
+
+# 2. Admin mode only: remove leftover OIDC settings and Entra secret objects (Helm doesn't delete them)
+kubectl -n unique patch cm argocd-cm --type=json -p='[{"op":"remove","path":"/data/oidc.config"}]'
+kubectl -n unique delete deployment,poddisruptionbudget,secretproviderclass argo-azure-entra-secret-sscsid-keeper --ignore-not-found
+
+# 3. Check
+kubectl -n unique get cm argocd-cm -o jsonpath='{.data.admin\.enabled}{"\n"}{.data.oidc\.config}{"\n"}'
+```
 
 ## Accessing the Argo CD UI
 

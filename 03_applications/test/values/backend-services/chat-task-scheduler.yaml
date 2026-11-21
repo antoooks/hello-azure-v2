@@ -16,10 +16,10 @@ routes:
 workloadIdentity:
   azure:
     enabled: true
-    clientId: 1dc12421-3b16-48cd-8b25-497234379625
+    clientId: dab5987e-78fe-48a8-986c-9e8c09f2321a
 secretProvider:
-  tenantId: aeade8c4-d4f7-4ae7-9149-4975fa3a7f91
-  userAssignedIdentityID: 1f10df87-9938-4fe9-87c4-b3170f6e9611 # azurekeyvaultsecretsprovider-aks-test (client ID)
+  tenantId: 99330c76-81d2-460e-861e-35af8e2a4266
+  userAssignedIdentityID: f2b3f61f-73e8-4e46-a22c-81d0abc6e653 # azurekeyvaultsecretsprovider-aks-anto (client ID)
   vaults:
     hakv2anto:
       AZURE_FGPT_STORAGE_CONNECTION_STRING: ingestion-storage-connection-string-1

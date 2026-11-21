@@ -3,13 +3,13 @@
 #   - day-2: gitops_app_registration_enabled = true (creates the Entra app and its Key Vault secrets)
 #   - the argo-azure-entra-secret release, which mounts the app's client ID/secret
 #     (values in argo-azure-entra-secret.yaml; added automatically by the helmfile when argoAuth = oidc)
-#   - <tenant-id> below replaced with your tenant ID
+#   - the issuer below uses this sandbox tenant (99330c76-...); change it if you move to another tenant
 configs:
   cm:
     admin.enabled: false
     oidc.config: |
       name: AzureAD
-      issuer: https://login.microsoftonline.com/<tenant-id>/v2.0
+      issuer: https://login.microsoftonline.com/99330c76-81d2-460e-861e-35af8e2a4266/v2.0
       clientID: $argo-azure-entra-secret-sscsid-keeper:oidc.azure.client_id
       clientSecret: $argo-azure-entra-secret-sscsid-keeper:oidc.azure.client_secret
       requestedIDTokenClaims:
