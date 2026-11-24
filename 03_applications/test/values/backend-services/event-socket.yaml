@@ -4,7 +4,7 @@ image:
 routes:
   gateway:
     namespace: unique
-  hostname: api.sb-trilaksono-001.unique.dev
+  hostname: api.sb-trilaksono.unique.dev
   pathPrefix: /event-socket
   paths:
     versioned:

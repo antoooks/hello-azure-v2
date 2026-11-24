@@ -8,4 +8,4 @@ image:
 env:
   HTML_STORE_TTL_MS: "60000"
 routes:
-  hostname: reflector.sb-trilaksono-001.unique.dev
+  hostname: reflector.sb-trilaksono.unique.dev

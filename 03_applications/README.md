@@ -22,6 +22,17 @@ helmfile apply -e test -f argo-bootstrap.yaml.gotmpl
 
 Alternatively, in this repository, you can simply run the `[test][bootstrap ArgoCD] 🐙` workflow.
 
+## Environment-specific names
+
+The values files contain Azure resource names that end in the Terraform `env` value, such as `hakv2<env>`, `uqhacr<env>.azurecr.io` and `uqharedis-<env>-port`. After changing `env` in `02_infrastructure/environments/test/00-parameters-day-*.auto.tfvars`, rewrite them all and push:
+
+```bash
+./scripts/set-env.sh            # uses env from the day-2 tfvars; "test" if it is missing or null
+./scripts/set-env.sh --check    # verify only
+```
+
+See [scripts/Readme.md](../scripts/Readme.md#set-envsh) for the exact patterns.
+
 ## Argo CD login mode
 
 The login mode is set by `argoAuth` in [argo-bootstrap.yaml.gotmpl](argo-bootstrap.yaml.gotmpl):
@@ -52,7 +63,7 @@ If the two disagree, `helmfile` stops with an error that says what to change.
 
    ```bash
    az account show --query tenantId -o tsv                                   # tenant ID
-   az aks show -g resource-group-core -n aks-anto \
+   az aks show -g resource-group-core -n aks-<env> \
      --query addonProfiles.azureKeyvaultSecretsProvider.identity.clientId -o tsv   # Key Vault CSI identity (client ID)
    az keyvault secret list --vault-name <sensitive-kv> \
      --query "[?starts_with(name,'aad-app-')].name" -o tsv                   # client-id / client-secret secret names
@@ -152,20 +163,20 @@ Argo CD is installed in the `unique` namespace. With `argoAuth: admin` (see abov
 
 1. **Prerequisites**
    - Argo CD has synced the chat apps (e.g. `backend-service-ingestion-worker-chat` is Healthy).
-   - DNS for the test cluster is in place: `sb-trilaksono-001.unique.dev`, `api.sb-trilaksono-001.unique.dev`, `id.sb-trilaksono-001.unique.dev`.
+   - DNS for the test cluster is in place: `sb-trilaksono.unique.dev`, `api.sb-trilaksono.unique.dev`, `id.sb-trilaksono.unique.dev`.
    - TLS certificates are issued (cert-manager + Kong ingress).
 
 2. **Open the chat UI**
-   - In a browser go to: **https://sb-trilaksono-001.unique.dev/chat**
-   - You will be redirected to Zitadel (IdP) at **https://id.sb-trilaksono-001.unique.dev** to sign in.
+   - In a browser go to: **https://sb-trilaksono.unique.dev/chat**
+   - You will be redirected to Zitadel (IdP) at **https://id.sb-trilaksono.unique.dev** to sign in.
    - After login you are redirected back to the chat app.
 
 3. **Optional: check API and pods**
-   - Chat API base: `https://api.sb-trilaksono-001.unique.dev/chat`
+   - Chat API base: `https://api.sb-trilaksono.unique.dev/chat`
    - With `kubectl` (context set to the test cluster):
      - `kubectl get pods -n unique -l app.kubernetes.io/name=backend-service-ingestion-worker-chat`
      - `kubectl get pods -n unique -l app.kubernetes.io/name=backend-service-chat`
-   - Quick API reachability (no auth): `curl -sI https://api.sb-trilaksono-001.unique.dev/chat` (may return 401/403 without a token).
+   - Quick API reachability (no auth): `curl -sI https://api.sb-trilaksono.unique.dev/chat` (may return 401/403 without a token).
 
 ## Troubleshooting
 
@@ -176,21 +187,21 @@ This error appears when the chat web app tries to restore the session (silent si
 **Steps to fix:**
 
 1. **Open Zitadel Console (test)**  
-   Go to **https://id.sb-trilaksono-001.unique.dev** and sign in with the Zitadel admin user (e.g. the FirstInstance user from your Zitadel config).
+   Go to **https://id.sb-trilaksono.unique.dev** and sign in with the Zitadel admin user (e.g. the FirstInstance user from your Zitadel config).
 
 2. **Get the correct IDs**
    - In Zitadel: go to your **Project** (e.g. "Cluster IAM" or "unique") and note the **Project ID** (numeric).
    - Open the **Application** used by the chat web app (e.g. "unique-app" or "chat"). Note the **Client ID** (numeric).
    - If the application does not exist, create a **User Agent** (or **Web**) application and set:
-     - **Redirect URIs**: `https://sb-trilaksono-001.unique.dev/chat`, `https://sb-trilaksono-001.unique.dev/chat/` (and add any callback path your app uses, e.g. `/chat/callback` if applicable).
-     - **Post-logout redirect URI** if needed (e.g. `https://sb-trilaksono-001.unique.dev/chat`).
+     - **Redirect URIs**: `https://sb-trilaksono.unique.dev/chat`, `https://sb-trilaksono.unique.dev/chat/` (and add any callback path your app uses, e.g. `/chat/callback` if applicable).
+     - **Post-logout redirect URI** if needed (e.g. `https://sb-trilaksono.unique.dev/chat`).
      - **Auth Method**: PKCE is typical for SPAs; no client secret.
 
 3. **Update the repo with the real IDs**
    - In `03_applications/test/values/web-apps/_all.yaml` set:
      - `ZITADEL_CLIENT_ID` to the Application **Client ID** from Zitadel.
      - `ZITADEL_PROJECT_ID` to the **Project ID** from Zitadel.
-   - Keep `ZITADEL_ISSUER` as `https://id.sb-trilaksono-001.unique.dev`.
+   - Keep `ZITADEL_ISSUER` as `https://id.sb-trilaksono.unique.dev`.
    - If Kong or other services use the same project for JWT validation, update `ZITADEL_PROJECT_ID` in:
      - `03_applications/test/values/backend-services/_all.yaml`
      - `03_applications/test/values/kong/kong-cluster-plugins.yaml` (e.g. `zitadel_project_id`)
@@ -199,4 +210,4 @@ This error appears when the chat web app tries to restore the session (silent si
 
 4. **Redeploy and retry**
    - Commit, push, and sync the chat web app (and any apps that use the updated Kong/backend config).
-   - Clear site data for `sb-trilaksono-001.unique.dev` or use a private/incognito window, then open **https://sb-trilaksono-001.unique.dev/chat** again.
+   - Clear site data for `sb-trilaksono.unique.dev` or use a private/incognito window, then open **https://sb-trilaksono.unique.dev/chat** again.

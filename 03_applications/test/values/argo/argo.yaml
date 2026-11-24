@@ -1,6 +1,6 @@
 nameOverride: argo
 global:
-  domain: argo.sb-trilaksono-001.unique.dev
+  domain: argo.sb-trilaksono.unique.dev
   nodeSelector:
     scalability: steady
     lifecycle: persistent
@@ -16,15 +16,15 @@ server:
       appgw.ingress.kubernetes.io/backend-protocol: "https"
       cert-manager.io/cluster-issuer: letsencrypt-azure-dns
     hosts:
-      - argo.sb-trilaksono-001.unique.dev
+      - argo.sb-trilaksono.unique.dev
     tls:
       - secretName: argo-le-tls
         hosts:
-          - argo.sb-trilaksono-001.unique.dev
+          - argo.sb-trilaksono.unique.dev
 configs:
   cm:
     create: true
-    url: https://argo.sb-trilaksono-001.unique.dev
+    url: https://argo.sb-trilaksono.unique.dev
     timeout.reconciliation: 30s
     # [ARGOCD-OIDC] Login settings (admin.enabled, oidc.config) are not set here. They come from the overlay picked by
     # argoAuth in argo-bootstrap.yaml.gotmpl: argo-auth-admin.yaml (built-in admin) or argo-auth-oidc.yaml (Entra ID).

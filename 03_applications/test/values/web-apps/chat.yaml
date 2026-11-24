@@ -1,8 +1,8 @@
 env:
   FILE_TYPES_DOCUMENT_TRANSLATOR: "docx,xls,pptx"
   MAX_FILE_SIZE_IN_MB: 200
-  REFLECTOR_BACKEND_API_URL: https://reflector.sb-trilaksono-001.unique.dev
-  SELF_URL: https://sb-trilaksono-001.unique.dev/chat
+  REFLECTOR_BACKEND_API_URL: https://reflector.sb-trilaksono.unique.dev
+  SELF_URL: https://sb-trilaksono.unique.dev/chat
 image:
   tag: "2026.44.3"
   repository: uqhacranto.azurecr.io/web-app-chat

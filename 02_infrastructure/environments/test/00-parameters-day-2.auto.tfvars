@@ -98,7 +98,7 @@ main_kv_name      = "hakv1"
 sensitive_kv_name = "hakv2"
 
 # DNS Zone
-dns_zone_name = "sb-trilaksono-001.unique.dev"
+dns_zone_name = "sb-trilaksono.unique.dev"
 
 # Entra ID objects: off in this sandbox. The deploying user cannot create groups or app registrations
 # (403 Authorization_RequestDenied), and Argo CD does not use Entra ID (OIDC) login here.

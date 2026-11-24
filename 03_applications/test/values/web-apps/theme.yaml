@@ -1,5 +1,5 @@
 env:
-  SELF_URL: https://sb-trilaksono-001.unique.dev/theme
+  SELF_URL: https://sb-trilaksono.unique.dev/theme
 image:
   tag: "2026.44.3"
   repository: uqhacranto.azurecr.io/web-app-theme

@@ -140,7 +140,7 @@ extraManifests:
     namespace: unique
   spec:
     hostnames:
-      - id.sb-trilaksono-001.unique.dev
+      - id.sb-trilaksono.unique.dev
     parentRefs:
       - group: gateway.networking.k8s.io
         kind: Gateway

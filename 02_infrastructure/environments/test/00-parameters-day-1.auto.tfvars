@@ -88,7 +88,7 @@ speech_service_private_dns_zone_virtual_network_link_name = "speech-service-priv
 azurerm_private_dns_zone_virtual_network_link_name        = "PsqlVnetZone.com"
 
 # DNS Zone (created in day-1)
-dns_zone_name = "sb-trilaksono-001.unique.dev"
+dns_zone_name = "sb-trilaksono.unique.dev"
 
 # Application Registration
 application_registration_gitops_display_name = "GitOps-anto"

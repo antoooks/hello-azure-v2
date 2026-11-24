@@ -6,4 +6,4 @@ image:
 env:
   ZITADEL_PROJECT_ID: "362295080381317263" # needs to be updated to the correct project id (Cluster IAM project -> e.g. unique)
 routes:
-  hostname: api.sb-trilaksono-001.unique.dev
+  hostname: api.sb-trilaksono.unique.dev

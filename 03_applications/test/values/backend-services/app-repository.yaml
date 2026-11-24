@@ -7,7 +7,7 @@ image:
   tag: "2026.44.3"
   repository: uqhacranto.azurecr.io/backend-service-app-repository
 routes:
-  hostname: api.sb-trilaksono-001.unique.dev
+  hostname: api.sb-trilaksono.unique.dev
 secretProvider:
   vaults:
     hakv2anto:

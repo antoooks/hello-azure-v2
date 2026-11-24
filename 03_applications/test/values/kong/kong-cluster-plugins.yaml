@@ -9,12 +9,12 @@ resources:
     config:
       algorithm: RS256
       allowed_iss:
-        - https://id.sb-trilaksono-001.unique.dev
+        - https://id.sb-trilaksono.unique.dev
       # Fetch JWKS from the in-cluster Zitadel service to avoid hairpinning
       # (going outside the cluster to reach Zitadel which is deployed in the same cluster).
       # The forwarded Host header keeps Zitadel's issuer/org resolution correct.
       jwks_extra_headers:
-        forwarded: host=id.sb-trilaksono-001.unique.dev
+        forwarded: host=id.sb-trilaksono.unique.dev
       jwks_uri: http://zitadel.unique.svc.cluster.local:8080/oauth/v2/keys
       # WebSocket tickets (release 2026.40, kong-plugins >= 2.7, `ws_ticket_enabled`,
       # `ticket_mint_path_suffixes: [/auth/ticket]`, `ticket_upgrade_path_suffixes: [/graphql]`,
@@ -44,7 +44,7 @@ resources:
     plugin: cors
     config:
       origins:
-        - https://sb-trilaksono-001.unique.dev
+        - https://sb-trilaksono.unique.dev
   - apiVersion: configuration.konghq.com/v1
     kind: KongClusterPlugin
     metadata:

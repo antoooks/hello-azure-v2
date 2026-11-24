@@ -749,8 +749,15 @@ variable "telemetry_observer_user_ids" {
 }
 
 variable "env" {
-  description = "Environment name (e.g., test or prod)"
+  description = "Environment name (e.g., test or prod). Suffix of most resource names; also drives 03_applications via scripts/set-env.sh. Null or unset means \"test\"."
   type        = string
+  default     = "test"
+  nullable    = false
+
+  validation {
+    condition     = can(regex("^[a-z0-9]{1,13}$", var.env))
+    error_message = "env must be 1-13 lowercase letters or digits (storage account and ACR names allow nothing else)."
+  }
 }
 
 variable "container_registry_name" {

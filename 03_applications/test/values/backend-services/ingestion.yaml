@@ -5,7 +5,7 @@ env:
   ELASTICSEARCH_CA_BUNDLE: /etc/ssl/elastic/ca.crt
   ELASTICSEARCH_URL: https://elasticsearch-ingestion-es-http.unique.svc:9200
   ELASTICSEARCH_USERNAME: elastic
-  INGESTION_UPLOAD_API_URL: https://api.sb-trilaksono-001.unique.dev/scoped/ingestion/upload
+  INGESTION_UPLOAD_API_URL: https://api.sb-trilaksono.unique.dev/scoped/ingestion/upload
   ZITADEL_ROOT_ORG_ID: "361772156100608158"
 envVars:
   - name: RABBITMQ_USERNAME

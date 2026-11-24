@@ -4,15 +4,15 @@ image:
   tag: "2026.44.3"
   useDigest: false
 env:
-  ADMIN_FRONTEND_URL: https://sb-trilaksono-001.unique.dev/admin
+  ADMIN_FRONTEND_URL: https://sb-trilaksono.unique.dev/admin
   ALLOW_CONTEXT_MEMORY_WITH_WEB_SEARCH_UN_22591: "true"
-  CHAT_FRONTEND_URL: https://sb-trilaksono-001.unique.dev/chat
-  CORS_ALLOWED_ORIGINS: https://sb-trilaksono-001.unique.dev
+  CHAT_FRONTEND_URL: https://sb-trilaksono.unique.dev/chat
+  CORS_ALLOWED_ORIGINS: https://sb-trilaksono.unique.dev
   PGSSLMODE: require
-  UNIQUE_INSTALLATION_ID: sb-trilaksono-001.unique.dev
+  UNIQUE_INSTALLATION_ID: sb-trilaksono.unique.dev
   ZITADEL_PROJECT_ID: "362295080381317263"
 routes:
-  hostname: api.sb-trilaksono-001.unique.dev # mandatory in the chart, no routes are rendered (see defaults)
+  hostname: api.sb-trilaksono.unique.dev # mandatory in the chart, no routes are rendered (see defaults)
 workloadIdentity:
   azure:
     enabled: true

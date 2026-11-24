@@ -29,13 +29,13 @@ egressGateway:
   # - sbx-storage: checkpoint restore/save
   # - PyPI: package installs inside sandboxes
   allowHosts:
-    api.sb-trilaksono-001.unique.dev: true
+    api.sb-trilaksono.unique.dev: true
     uqhastorageanto.blob.core.windows.net: true
     sbx-storage.sbx.svc.cluster.local: true
     pypi.org: true
     files.pythonhosted.org: true
   allowPaths:
-    api.sb-trilaksono-001.unique.dev:
+    api.sb-trilaksono.unique.dev:
       - /scoped/ingestion/upload
     uqhastorageanto.blob.core.windows.net:
       - /ingestion/*/cont_*
@@ -47,7 +47,7 @@ egressGateway:
     files.pythonhosted.org:
       - /packages/*
   allowMethods:
-    api.sb-trilaksono-001.unique.dev:
+    api.sb-trilaksono.unique.dev:
       - PUT
     # GET/HEAD for SAS reads; PUT only for the preview PDF the SDK writes next to a blob it just uploaded,
     # bounded by the SAS token in the query string and the path filter above.

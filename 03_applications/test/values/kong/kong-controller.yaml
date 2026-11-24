@@ -60,10 +60,10 @@ gateway:
     proxy:
       enabled: true
       clusterIssuer: letsencrypt-azure-dns
-      commonName: sb-trilaksono-001.unique.dev
+      commonName: sb-trilaksono.unique.dev
       dnsNames:
-        - sb-trilaksono-001.unique.dev
-        - "*.sb-trilaksono-001.unique.dev"
+        - sb-trilaksono.unique.dev
+        - "*.sb-trilaksono.unique.dev"
     admin:
       enabled: false
     cluster:
