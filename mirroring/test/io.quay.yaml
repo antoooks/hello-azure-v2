@@ -1,7 +1,10 @@
 images:
-  - name: jetstack/cert-manager-cainjector:v1.12.2
-  - name: jetstack/cert-manager-webhook:v1.12.2
-  - name: jetstack/cert-manager-controller:v1.12.2
+  # cert-manager: must match the chart version in 03_applications/test/apps/system/cert-manager.yaml (1.17.2)
+  - name: jetstack/cert-manager-cainjector:v1.17.2
+  - name: jetstack/cert-manager-webhook:v1.17.2
+  - name: jetstack/cert-manager-controller:v1.17.2
+  - name: jetstack/cert-manager-acmesolver:v1.17.2
+  - name: jetstack/cert-manager-startupapicheck:v1.17.2
   - name: prometheus/blackbox-exporter:v0.28.0
 sourceRegistry: quay.io
 targetRegistry: uqhacranto.azurecr.io

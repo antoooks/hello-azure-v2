@@ -11,7 +11,7 @@ subnet_agw_cidr = "10.202.3.0/28"
 # WARNING: switching aks_private_cluster_enabled replaces (destroys and recreates) the cluster.
 # Changing only the IP list updates the cluster in place.
 aks_private_cluster_enabled         = false
-aks_api_server_authorized_ip_ranges = ["116.86.198.35/32"]
+aks_api_server_authorized_ip_ranges = ["116.86.198.35/32", "51.103.136.50/32"]
 
 # Application Gateway configuration
 # Use explicit name to preserve existing gateway IP configuration name and avoid replacement

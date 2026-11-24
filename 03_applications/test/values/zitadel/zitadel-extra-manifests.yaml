@@ -6,9 +6,11 @@ extraManifests:
     name: helloazuresensitivezitadel
     annotations:
       external-secrets.io/managed: "true"
-      argocd.argoproj.io/sync-wave: "-1"
-      # helm.sh/hook: pre-install,pre-upgrade
-      # helm.sh/hook-weight: "-1"
+      # The chart's zitadel-init Job is a PreSync hook (helm pre-install, weight 1) and reads this secret, so it must
+      # be a PreSync hook too, with a lower weight. A sync-wave is not enough: hooks run before every wave.
+      # Argo CD waits for the ExternalSecret to be Ready before it starts the Job.
+      argocd.argoproj.io/hook: PreSync
+      argocd.argoproj.io/hook-weight: "-1"
   spec:
     refreshInterval: 1h
     secretStoreRef:
@@ -19,22 +21,22 @@ extraManifests:
     data:
       - secretKey: ZITADEL_DATABASE_POSTGRES_HOST
         remoteRef:
-          key: psql-oefyzgkn-host # NOTE: needs to match the key in the hakv2anto key-vault
+          key: psql-18eduj7g-host # NOTE: Key Vault secret in hakv2anto; psql-<suffix> is the PostgreSQL server name (az postgres flexible-server list)
       - secretKey: ZITADEL_DATABASE_POSTGRES_PORT
         remoteRef:
-          key: psql-oefyzgkn-port # NOTE: needs to match the key in the hakv2anto key-vault
+          key: psql-18eduj7g-port # NOTE: Key Vault secret in hakv2anto; psql-<suffix> is the PostgreSQL server name (az postgres flexible-server list)
       - secretKey: ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME
         remoteRef:
-          key: psql-oefyzgkn-username # NOTE: needs to match the key in the hakv2anto key-vault
+          key: psql-18eduj7g-username # NOTE: Key Vault secret in hakv2anto; psql-<suffix> is the PostgreSQL server name (az postgres flexible-server list)
       - secretKey: ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD
         remoteRef:
-          key: psql-oefyzgkn-password # NOTE: needs to match the key in the hakv2anto key-vault
+          key: psql-18eduj7g-password # NOTE: Key Vault secret in hakv2anto; psql-<suffix> is the PostgreSQL server name (az postgres flexible-server list)
       - secretKey: ZITADEL_DATABASE_POSTGRES_USER_PASSWORD
         remoteRef:
-          key: zitadel-db-user-password # NOTE: needs to match the key in the hakv2anto key-vault
+          key: zitadel-db-user-password # NOTE: Key Vault secret in hakv2anto; psql-<suffix> is the PostgreSQL server name (az postgres flexible-server list)
       - secretKey: masterkey
         remoteRef:
-          key: zitadel-master-key # NOTE: needs to match the key in the hakv2anto key-vault
+          key: zitadel-master-key # NOTE: Key Vault secret in hakv2anto; psql-<suffix> is the PostgreSQL server name (az postgres flexible-server list)
 
 
 - kind: Secret
@@ -42,9 +44,9 @@ extraManifests:
   metadata:
     name: zitadel-certs
     annotations:
-      argocd.argoproj.io/sync-wave: "-1"
-      # helm.sh/hook: pre-install,pre-upgrade
-      # helm.sh/hook-weight: "-1"
+      # Used by the zitadel-init PreSync Job (see the ExternalSecret above), so it is a PreSync hook as well.
+      argocd.argoproj.io/hook: PreSync
+      argocd.argoproj.io/hook-weight: "-1"
   # This cert is public - DigiCert Global Root CA
   # https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/how-to-connect-tls-ssl#applications-that-require-certificate-verification-for-tlsssl-connectivity
   stringData:

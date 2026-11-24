@@ -1,8 +1,10 @@
 controller:
-  image:
-    repository: uqhacranto.azurecr.io/kong/kubernetes-ingress-controller
-    tag: 3.4.4
+  # In the kong subchart, the ingress controller image is ingressController.image; a bare controller.image would
+  # set the (unused) Kong gateway image of this release and leave the controller on the Docker Hub default.
   ingressController:
+    image:
+      repository: uqhacranto.azurecr.io/kong/kubernetes-ingress-controller
+      tag: 3.4.4
     envFrom:
       - configMapRef:
           name: kong-controller-environment
