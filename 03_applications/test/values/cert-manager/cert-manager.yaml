@@ -11,8 +11,11 @@ image:
 nodeSelector:
   scalability: steady
   lifecycle: persistent
+# The DNS-01 self-check asks the zone's own Azure name servers directly (no resolver caching). Azure picks the
+# name server set (ns1-0X ...) per zone, so these must match this environment's zone; other zones answer REFUSED:
+#   az network dns zone show -g rg-vnet-002 -n sb-trilaksono.unique.dev --query nameServers -o tsv
 extraArgs:
-  - --dns01-recursive-nameservers=ns1-04.azure-dns.com.:53,ns2-04.azure-dns.net.:53,ns3-04.azure-dns.org.:53,ns4-04.azure-dns.info.:53
+  - --dns01-recursive-nameservers=ns1-03.azure-dns.com.:53,ns2-03.azure-dns.net.:53,ns3-03.azure-dns.org.:53,ns4-03.azure-dns.info.:53
   - --dns01-recursive-nameservers-only
 resources:
   limits:
