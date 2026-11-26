@@ -1,0 +1,48 @@
+meta {
+  name: 04 Add project roles (bulk)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{zitadelUrl}}/management/v1/projects/{{projectId}}/roles/_bulk
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "roles": [
+      { "key": "chat.chat.basic", "displayName": "chat with limit to input", "group": "chat" },
+      { "key": "chat.knowledge.read", "displayName": "view knowledge base", "group": "knowledge-base" },
+      { "key": "chat.knowledge.write", "displayName": "upload knowledge base", "group": "knowledge-base" },
+      { "key": "chat.data.admin", "displayName": "chat.data.admin", "group": "admin" },
+      { "key": "chat.feedback.read", "displayName": "read chat-feedback", "group": "admin" },
+      { "key": "chat.admin.all", "displayName": "configure assistant", "group": "admin" },
+      { "key": "chat.debug.read", "displayName": "debugging", "group": "admin" },
+      { "key": "admin.user-management.write", "displayName": "Manage groups for users", "group": "admin" },
+      { "key": "admin.space.write", "displayName": "Configure spaces", "group": "admin" },
+      { "key": "admin.app-repository.write", "displayName": "Manage app repository", "group": "admin" },
+      { "key": "connector.admin.read", "displayName": "View MCP configs", "group": "admin" },
+      { "key": "connector.admin.write", "displayName": "Manage MCP configs", "group": "admin" },
+      { "key": "virtualservers.admin.manage", "displayName": "Manage Virtual Server configs", "group": "admin" }
+    ]
+  }
+}
+
+tests {
+  test("roles added", function () {
+    expect(res.status).to.equal(200);
+  });
+}
+
+docs {
+  Adds all project roles in one call (guide section 3.3). Keys, display names and groups are from
+  [Understand Roles and Permissions](https://docs.unique.ai/it-operators/identity-and-access-management-iam/understand-roles-and-permissions).
+  The experimental `chat.agent-benchmarking.run` / `.manage` roles are left out; add them here if needed.
+
+  The whole call fails with `ALREADY_EXISTS` if any role in the list already exists on the project.
+  Remove the existing ones from the body (check with "05 List project roles") and send again.
+
+  When Unique adds new roles in a release, add them here and in "07 Grant roles to user".
+}

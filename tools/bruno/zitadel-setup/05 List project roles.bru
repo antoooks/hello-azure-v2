@@ -1,0 +1,35 @@
+meta {
+  name: 05 List project roles
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{zitadelUrl}}/management/v1/projects/{{projectId}}/roles/_search
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query": { "limit": 100 }
+  }
+}
+
+tests {
+  test("all 13 roles exist", function () {
+    expect(res.status).to.equal(200);
+    const keys = (res.body.result || []).map((r) => r.key);
+    const expected = [
+      "chat.chat.basic", "chat.knowledge.read", "chat.knowledge.write", "chat.data.admin",
+      "chat.feedback.read", "chat.admin.all", "chat.debug.read", "admin.user-management.write",
+      "admin.space.write", "admin.app-repository.write", "connector.admin.read",
+      "connector.admin.write", "virtualservers.admin.manage"
+    ];
+    expect(expected.filter((k) => !keys.includes(k))).to.deep.equal([]);
+  });
+}
+
+docs {
+  Lists the roles on the project. The test fails and shows the missing keys if any expected role is absent.
+}

@@ -1,0 +1,26 @@
+meta {
+  name: 01 Check token (my org)
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{zitadelUrl}}/management/v1/orgs/me
+  body: none
+  auth: inherit
+}
+
+tests {
+  test("PAT is valid and the org is reachable", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.org.id).to.equal(bru.getEnvVar("orgId"));
+  });
+}
+
+docs {
+  Sanity check before changing anything. Expects HTTP 200 and the Cluster IAM organization (`orgId`).
+
+  - 401 `UNAUTHENTICATED`: `pat` is missing, wrong or expired.
+  - 403 / `PERMISSION_DENIED`: the service user lacks the instance role IAM Owner.
+  - Wrong org returned: fix `orgId` (Organization → Resource Id).
+}

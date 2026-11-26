@@ -1,0 +1,50 @@
+meta {
+  name: 07 Grant roles to user
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{zitadelUrl}}/management/v1/users/{{userId}}/grants
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "projectId": "{{projectId}}",
+    "roleKeys": [
+      "chat.chat.basic",
+      "chat.knowledge.read",
+      "chat.knowledge.write",
+      "chat.data.admin",
+      "chat.feedback.read",
+      "chat.admin.all",
+      "chat.debug.read",
+      "admin.user-management.write",
+      "admin.space.write",
+      "admin.app-repository.write",
+      "connector.admin.read",
+      "connector.admin.write",
+      "virtualservers.admin.manage"
+    ]
+  }
+}
+
+tests {
+  test("authorization created", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.userGrantId).to.be.a("string");
+  });
+}
+
+docs {
+  Gives `userId` all project roles (an "Authorization" in the Zitadel console). Remove roles from `roleKeys`
+  for users who should not be admins; `chat.chat.basic` alone is the plain chat user.
+
+  Users in Cluster IAM itself need no project grant (guide section 3.4). A grant is only needed when the
+  users live in another organization, e.g. a separate org per client.
+
+  Fails with `ALREADY_EXISTS` if the user already has an authorization on this project: change the
+  existing one in the console (Authorizations) instead.
+}

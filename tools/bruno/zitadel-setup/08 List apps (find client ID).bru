@@ -1,0 +1,39 @@
+meta {
+  name: 08 List apps (find client ID)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{zitadelUrl}}/management/v1/projects/{{projectId}}/apps/_search
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "query": { "limit": 50 }
+  }
+}
+
+script:post-response {
+  const apps = (res.body && res.body.result) || [];
+  const app = apps.find((a) => a.name === bru.getEnvVar("appName"));
+  if (app && app.oidcConfig) {
+    bru.setEnvVar("appId", app.id);
+    bru.setEnvVar("clientId", app.oidcConfig.clientId);
+  }
+}
+
+tests {
+  test("app found", function () {
+    expect(res.status).to.equal(200);
+    const apps = res.body.result || [];
+    expect(apps.map((a) => a.name)).to.include(bru.getEnvVar("appName"));
+  });
+}
+
+docs {
+  Read-only. Finds the app named `appName` in the project and stores `appId` and `clientId`. Use it when
+  the app already exists (created in the console or in an earlier run), or to read the client ID again.
+}

@@ -4,6 +4,6 @@ image:
   tag: "2026.44.3"
   useDigest: false
 env:
-  ZITADEL_PROJECT_ID: "362295080381317263" # needs to be updated to the correct project id (Cluster IAM project -> e.g. unique)
+  ZITADEL_PROJECT_ID: "401198628296720595"
 routes:
   hostname: api.sb-trilaksono.unique.dev

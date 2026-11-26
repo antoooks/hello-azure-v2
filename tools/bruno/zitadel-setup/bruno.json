@@ -1,0 +1,6 @@
+{
+  "version": "1",
+  "name": "Zitadel setup (hello-azure)",
+  "type": "collection",
+  "ignore": ["node_modules", ".git"]
+}

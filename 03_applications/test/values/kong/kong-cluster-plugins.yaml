@@ -23,7 +23,7 @@ resources:
       # Web apps therefore keep WEBSOCKET_AUTH_MODE=token (see web-apps/_all.yaml).
       uri_param_names:
         - token
-      zitadel_project_id: '362295080381317263' # needs to be updated to the correct project id (Cluster IAM project -> e.g. unique)
+      zitadel_project_id: '401198628296720595'
   - apiVersion: configuration.konghq.com/v1
     kind: KongClusterPlugin
     metadata:

@@ -1,0 +1,44 @@
+meta {
+  name: 02 Create project
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{zitadelUrl}}/management/v1/projects
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "name": "{{projectName}}",
+    "projectRoleAssertion": true,
+    "projectRoleCheck": true
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.id) {
+    bru.setEnvVar("projectId", res.body.id);
+  }
+}
+
+tests {
+  test("project created", function () {
+    expect(res.status).to.equal(200);
+    expect(res.body.id).to.be.a("string");
+  });
+}
+
+docs {
+  Creates the project (guide section 3) in Cluster IAM and stores its ID in `projectId`.
+
+  - `projectRoleAssertion`: "Assert Roles on Authentication" (roles are added to the tokens).
+  - `projectRoleCheck`: "Check authorization on Authentication" (users without a role on the project cannot log in).
+
+  `projectId` is the value for every `ZITADEL_PROJECT_ID` in 03_applications/test/values and
+  `zitadel_project_id` in kong/kong-cluster-plugins.yaml.
+
+  If the project already exists, set `projectId` by hand (Projects → unique → Resource Id) and skip this request.
+}

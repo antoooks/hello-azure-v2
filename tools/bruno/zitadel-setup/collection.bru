@@ -1,0 +1,28 @@
+headers {
+  x-zitadel-orgid: {{orgId}}
+}
+
+auth {
+  mode: bearer
+}
+
+auth:bearer {
+  token: {{pat}}
+}
+
+docs {
+  # Zitadel setup for a new hello-azure cluster
+
+  Automates sections 3 and 3.x of the Unique guide
+  [IAM (Zitadel) Initial Setup on New Cluster](https://docs.unique.ai/it-operators/identity-and-access-management-iam/iam-zitadel-initial-setup-on-new-cluster):
+  project, web application (PKCE), token settings, project roles and the authorization for your user.
+
+  Every request authenticates with `{{pat}}` (a Personal Access Token of a service user with the instance role
+  **IAM Owner**, e.g. the `scope-management` service user) and acts inside the organization `{{orgId}}`
+  (Cluster IAM) through the `x-zitadel-orgid` header.
+
+  Run the requests in order (01 → 07). Requests that create something store the returned IDs
+  (`projectId`, `appId`, `clientId`, `userId`) in the active environment for the next requests.
+
+  See README.md in this folder for setup.
+}
