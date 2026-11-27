@@ -4,7 +4,7 @@ Sets up Zitadel on a new hello-azure cluster through the Zitadel Management API 
 project, web application, project roles and the authorization for your user. It automates section 3 of the
 Unique guide [IAM (Zitadel) Initial Setup on New Cluster](https://docs.unique.ai/it-operators/identity-and-access-management-iam/iam-zitadel-initial-setup-on-new-cluster).
 
-Open the folder in [Bruno](https://www.usebruno.com/): **Open Collection** → `tools/bruno/zitadel-setup`.
+Open this folder in [Bruno](https://www.usebruno.com/) with **Open Collection**.
 
 ## Before you start
 
@@ -17,8 +17,8 @@ but it only writes a machine key, not a PAT, and only when the Zitadel database 
 
 ### Create the service user and its PAT in the console
 
-1. **Log in.** Open `https://id.<domain>/ui/console` (e.g. `https://id.sb-trilaksono.unique.dev/ui/console`)
-   as the root user from `03_applications/test/values/zitadel/zitadel.yaml` (`FirstInstance.Org.Human`).
+1. **Log in.** Open `https://id.<your-domain>/ui/console` as the root user defined in the Zitadel chart
+   values under `FirstInstance.Org.Human` (in hello-azure-v2: `03_applications/<env>/values/zitadel/zitadel.yaml`).
    The first login forces a password change. Check that the organization switcher at the top left shows
    **Cluster IAM**.
 2. **Create the service user.** **Users** → **Service Users** tab → **+ New**:
@@ -37,17 +37,21 @@ but it only writes a machine key, not a PAT, and only when the Zitadel database 
 
    If the dialog only offers `ORG_OWNER`, `ORG_USER_MANAGER` and so on, you are on the organization's
    managers page, not the instance's: click **Default settings** first.
-5. **Store the PAT in Key Vault** (secret `manual-zitadel-scope-mgmt-pat`, created empty by Terraform in
-   `02_infrastructure/day-2/34-secrets.tf`). In zsh:
+5. **Store the PAT in Key Vault** as the secret `manual-zitadel-scope-mgmt-pat`. In hello-azure-v2 Terraform
+   creates it empty in the core Key Vault (`hakv1<env>`, see `02_infrastructure/day-2/34-secrets.tf`).
+   Replace `<key-vault>` with your vault's name. In zsh:
 
    ```zsh
    read -rs "PAT?PAT: "; echo
-   az keyvault secret set --vault-name hakv1anto -n manual-zitadel-scope-mgmt-pat --value "$PAT" -o none
+   az keyvault secret set --vault-name <key-vault> -n manual-zitadel-scope-mgmt-pat --value "$PAT" -o none
    unset PAT
    ```
 
+   In bash, use `read -rs -p "PAT: " PAT` for the first line.
+
 6. **Redeploy the consumers.** External Secrets copies the new value into the cluster on its next refresh.
-   Then restart `scope-management` (the `user-sync` CronJob picks the value up on its next run):
+   Then restart `scope-management` (the `user-sync` CronJob picks the value up on its next run). The
+   command assumes the apps run in the namespace `unique`:
 
    ```bash
    kubectl -n unique get deploy -o name | grep scope-management | xargs kubectl -n unique rollout restart
@@ -60,7 +64,10 @@ but it only writes a machine key, not a PAT, and only when the Zitadel database 
 
 `Note:` You may not have all of the values at first and will be guided to fill them accordingly when running each step, please read docs section in Bruno for more info.
 
-Select the `sandbox` environment and check the variables:
+The collection ships one environment, `example`, with placeholders. In Bruno, clone it (Environments →
+`example` → Clone) and name the copy after your cluster, so the example stays clean. Bruno saves the
+clone as a file in `environments/`: don't commit it. Then fill in `zitadelUrl`, `baseUrl` and
+`loginName`:
 
 | Variable | Meaning |
 |---|---|
@@ -73,11 +80,13 @@ Select the `sandbox` environment and check the variables:
 | `projectId`, `appId`, `clientId`, `userId` | Filled in by the requests |
 | `pat` (secret) | The PAT |
 
-`pat` is a **secret** variable: Bruno stores its value only on your machine, never in the `.bru` files. Copy
-it from Key Vault and paste it into the environment:
+`pat` is a **secret** variable: Bruno stores its value only on your machine, never in the `.bru` files.
+Never paste the PAT into an ordinary variable or into the collection's Auth tab; those are saved to the
+files in plain text. Copy it from Key Vault (macOS; on Linux pipe to `xclip -selection clipboard`) and paste
+it into the environment:
 
 ```bash
-az keyvault secret show --vault-name hakv1anto -n manual-zitadel-scope-mgmt-pat --query value -o tsv | pbcopy
+az keyvault secret show --vault-name <key-vault> -n manual-zitadel-scope-mgmt-pat --query value -o tsv | pbcopy
 ```
 
 ## Run the requests in order
@@ -98,9 +107,9 @@ Each request has a test (Tests tab) and a description (Docs tab). Requests that 
 
 ## Afterwards
 
-Put the IDs into the values files, then push and sync:
+Put the IDs into the values files of your deployment, then push and sync. In hello-azure-v2:
 
-| Value | Files in `03_applications/test/values` |
+| Value | Files in `03_applications/<env>/values` |
 |---|---|
 | `clientId` | `web-apps/_all.yaml` (`ZITADEL_CLIENT_ID`) |
 | `projectId` | `web-apps/_all.yaml`, `backend-services/_all.yaml`, `backend-services/unique-api.yaml`, `backend-services/chat-task-scheduler.yaml`, `ai-services/assistants-core.yaml` (`ZITADEL_PROJECT_ID`), `kong/kong-cluster-plugins.yaml` (`zitadel_project_id`) |
