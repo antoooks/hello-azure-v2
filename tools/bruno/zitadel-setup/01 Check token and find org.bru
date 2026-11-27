@@ -1,0 +1,46 @@
+meta {
+  name: 01 Check token and find org
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{zitadelUrl}}/admin/v1/orgs/_search
+  body: json
+  auth: inherit
+}
+
+body:json {
+  {
+    "queries": [
+      { "nameQuery": { "name": "{{orgName}}", "method": "TEXT_QUERY_METHOD_EQUALS" } }
+    ]
+  }
+}
+
+script:post-response {
+  const orgs = (res.body && res.body.result) || [];
+  if (res.status === 200 && orgs.length === 1) {
+    bru.setEnvVar("orgId", orgs[0].id);
+  }
+}
+
+tests {
+  test("PAT has IAM Owner and the org exists", function () {
+    expect(res.status).to.equal(200);
+    const orgs = res.body.result || [];
+    expect(orgs.map((o) => o.name)).to.deep.equal([bru.getEnvVar("orgName")]);
+  });
+}
+
+docs {
+  Read-only sanity check before changing anything. Searches the instance for the organization named
+  `orgName` (default `Cluster IAM`, created by the Zitadel chart's `FirstInstance` settings) and stores its
+  ID in `orgId`. It replaces looking up Organization → Resource Id in the console.
+
+  Calling the admin API also proves the PAT has the instance role **IAM Owner**.
+
+  - 401 `UNAUTHENTICATED`: `pat` is missing, wrong or expired.
+  - 403 / `PERMISSION_DENIED`: the service user lacks the instance role IAM Owner.
+  - No org found: check `orgName` (Organizations list in the console).
+}

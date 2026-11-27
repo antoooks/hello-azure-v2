@@ -1,13 +1,18 @@
-headers {
-  x-zitadel-orgid: {{orgId}}
-}
-
 auth {
   mode: bearer
 }
 
 auth:bearer {
   token: {{pat}}
+}
+
+script:pre-request {
+  // Act inside the Cluster IAM organization. Request 01 looks the org up by name and stores `orgId`;
+  // admin API calls (instance level) are sent without the header so a stale `orgId` can't break them.
+  const orgId = bru.getEnvVar("orgId");
+  if (orgId && !req.getUrl().includes("/admin/v1/")) {
+    req.setHeader("x-zitadel-orgid", orgId);
+  }
 }
 
 docs {
@@ -18,11 +23,12 @@ docs {
   project, web application (PKCE), token settings, project roles and the authorization for your user.
 
   Every request authenticates with `{{pat}}` (a Personal Access Token of a service user with the instance role
-  **IAM Owner**, e.g. the `scope-management` service user) and acts inside the organization `{{orgId}}`
-  (Cluster IAM) through the `x-zitadel-orgid` header.
+  **IAM Owner**, e.g. the `scope-management` service user). Request 01 finds the organization named
+  `{{orgName}}` (Cluster IAM) and stores its ID in `orgId`; all later requests act inside it through the
+  `x-zitadel-orgid` header.
 
   Run the requests in order (01 → 07). Requests that create something store the returned IDs
-  (`projectId`, `appId`, `clientId`, `userId`) in the active environment for the next requests.
+  (`orgId`, `projectId`, `appId`, `clientId`, `userId`) in the active environment for the next requests.
 
   See README.md in this folder for setup.
 }
